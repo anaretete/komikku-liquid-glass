@@ -20,14 +20,13 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
-import android.view.ViewGroup
 import android.view.WindowManager
-import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -45,11 +44,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -153,7 +152,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.seconds
-import androidx.compose.ui.graphics.Color as ComposeColor
 
 class ReaderActivity : BaseActivity() {
 
@@ -340,25 +338,18 @@ class ReaderActivity : BaseActivity() {
                 )
             }
 
-            val readerPageBackdrop = rememberLayerBackdrop()
+            val isDark = isSystemInDarkTheme()
+            val readerBackdrop = rememberCanvasBackdrop {
+                val baseColor = if (isDark) ComposeColor(0xFF16161A).copy(alpha = 0.92f) else ComposeColor(0xFFF2F2F6).copy(alpha = 0.94f)
+                drawRect(baseColor)
+            }
 
-            // 1. Background layer capturing content
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(readerPageBackdrop),
-            ) {
-                AndroidView(
-                    factory = {
-                        (binding.viewerContainer.parent as? ViewGroup)?.removeView(binding.viewerContainer)
-                        binding.viewerContainer
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
+            // 1. Content overlay (brightness, color tint filters, flash)
+            Box(modifier = Modifier.fillMaxSize()) {
                 ContentOverlay(state = state)
             }
 
-            // 2. Foreground sibling overlay consuming backdrop (NOT inside layerBackdrop)
+            // 2. Foreground overlay consuming safe readerBackdrop
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
@@ -374,7 +365,7 @@ class ReaderActivity : BaseActivity() {
                     )
                 }
 
-                CompositionLocalProvider(LocalLayerBackdrop provides readerPageBackdrop) {
+                CompositionLocalProvider(LocalLayerBackdrop provides readerBackdrop) {
                     AppBars(state = state)
                 }
             }
@@ -392,7 +383,7 @@ class ReaderActivity : BaseActivity() {
             // KMK <--
 
             val onDismissRequest = viewModel::closeDialog
-            CompositionLocalProvider(LocalLayerBackdrop provides readerPageBackdrop) {
+            CompositionLocalProvider(LocalLayerBackdrop provides readerBackdrop) {
                 when (state.dialog) {
                 is ReaderViewModel.Dialog.Loading -> {
                     AlertDialog(

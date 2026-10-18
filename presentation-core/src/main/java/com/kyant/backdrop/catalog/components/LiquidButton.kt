@@ -53,7 +53,7 @@ import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
 fun LiquidIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop = LocalLayerBackdrop.current ?: rememberLayerBackdrop(),
+    backdrop: Backdrop? = null,
     enabled: Boolean = true,
     isInteractive: Boolean = true,
     tint: Color = Color.Unspecified,
@@ -65,6 +65,9 @@ fun LiquidIconButton(
 ) {
     val animationScope = rememberCoroutineScope()
     val isDark = isSystemInDarkTheme()
+    val activeBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+        drawRect(if (isDark) Color(0xFF1C1C1E) else Color(0xFFF2F2F6))
+    }
 
     val interactiveHighlight = remember(animationScope) {
         InteractiveHighlight(
@@ -88,7 +91,7 @@ fun LiquidIconButton(
             .size(size)
             .alpha(if (enabled) 1f else 0.45f)
             .drawBackdrop(
-                backdrop = backdrop,
+                backdrop = activeBackdrop,
                 shape = { shape },
                 effects = {
                     vibrancy()
@@ -152,7 +155,7 @@ fun LiquidIconButton(
 fun LiquidButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop = LocalLayerBackdrop.current ?: rememberLayerBackdrop(),
+    backdrop: Backdrop? = null,
     enabled: Boolean = true,
     isInteractive: Boolean = true,
     tint: Color = Color.Unspecified,
@@ -163,6 +166,10 @@ fun LiquidButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val animationScope = rememberCoroutineScope()
+    val isDark = isSystemInDarkTheme()
+    val activeBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+        drawRect(if (isDark) Color(0xFF1C1C1E) else Color(0xFFF2F2F6))
+    }
 
     val interactiveHighlight = remember(animationScope) {
         InteractiveHighlight(
@@ -183,7 +190,7 @@ fun LiquidButton(
             .defaultMinSize(minHeight = 44.dp)
             .alpha(if (enabled) 1f else 0.45f)
             .drawBackdrop(
-                backdrop = backdrop,
+                backdrop = activeBackdrop,
                 shape = { shape },
                 effects = {
                     vibrancy()

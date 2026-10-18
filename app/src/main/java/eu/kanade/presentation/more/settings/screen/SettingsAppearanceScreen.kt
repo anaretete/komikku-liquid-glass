@@ -27,6 +27,25 @@ import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.more.settings.PreferenceScreen
+import eu.kanade.presentation.util.LocalBackPress
+import tachiyomi.presentation.core.components.material.CupertinoSegmentedControl
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
+import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -47,9 +66,74 @@ object SettingsAppearanceScreen : SearchableSettings {
     override fun getTitleRes() = MR.strings.pref_category_appearance
 
     @Composable
-    override fun getPreferences(): List<Preference> {
+    override fun Content() {
+        val handleBack = LocalBackPress.current
+        var selectedTab by rememberSaveable { mutableIntStateOf(0) }
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
+        val scope = rememberCoroutineScope()
 
+        val isGlass = LocalLiquidGlassConfig.current.enabled
+        val isDark = isSystemInDarkTheme()
+        val containerColor = if (isGlass) {
+            if (isDark) Color(0xFF000000) else Color(0xFFF2F2F7)
+        } else {
+            MaterialTheme.colorScheme.background
+        }
+
+        Scaffold(
+            topBar = { scrollBehavior ->
+                AppBar(
+                    title = stringResource(getTitleRes()),
+                    navigateUp = if (handleBack != null) handleBack::invoke else null,
+                    actions = { AppBarAction() },
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+            containerColor = containerColor,
+            content = { contentPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = contentPadding.calculateTopPadding()),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        CupertinoSegmentedControl(
+                            selectedTabIndex = selectedTab,
+                            onTabSelected = { selectedTab = it },
+                            tabs = listOf(
+                                "Theme & Display" to null,
+                                "Liquid Glass" to null,
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    val items = if (selectedTab == 0) {
+                        getAppearancePreferences(uiPreferences = uiPreferences)
+                    } else {
+                        SettingsLiquidGlassScreen.getLiquidGlassPreferences(
+                            uiPreferences = uiPreferences,
+                            scope = scope,
+                        )
+                    }
+
+                    PreferenceScreen(
+                        items = items,
+                        contentPadding = PaddingValues(
+                            bottom = contentPadding.calculateBottomPadding(),
+                        ),
+                    )
+                }
+            },
+        )
+    }
+
+    @Composable
+    fun getAppearancePreferences(uiPreferences: UiPreferences): List<Preference> {
         return listOf(
             getThemeGroup(uiPreferences = uiPreferences),
             // KMK -->
@@ -61,6 +145,12 @@ object SettingsAppearanceScreen : SearchableSettings {
             getForkGroup(uiPreferences = uiPreferences),
             // SY <--
         )
+    }
+
+    @Composable
+    override fun getPreferences(): List<Preference> {
+        val uiPreferences = remember { Injekt.get<UiPreferences>() }
+        return getAppearancePreferences(uiPreferences = uiPreferences)
     }
 
     @Composable
@@ -78,8 +168,6 @@ object SettingsAppearanceScreen : SearchableSettings {
 
         val amoledPref = uiPreferences.themeDarkAmoled()
         val amoled by amoledPref.collectAsState()
-
-        val isLiquidGlassEnabled by uiPreferences.liquidGlassEnabled().collectAsState()
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_theme),
@@ -158,26 +246,6 @@ object SettingsAppearanceScreen : SearchableSettings {
                     preference = uiPreferences.liquidGlassEnabled(),
                     title = "Liquid Glass UI",
                     subtitle = "Refractive glass surfaces, chromatic aberration, and spring physics",
-                ),
-                Preference.PreferenceItem.TextPreference(
-                    title = "Liquid Glass & Optics Settings",
-                    subtitle = "Configure live refraction, optical blur, lens curvature, and physics",
-                    enabled = isLiquidGlassEnabled,
-                    onClick = {
-                        navigator.push(SettingsLiquidGlassScreen)
-                    },
-                ),
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = uiPreferences.liquidGlassChromaticAberration(),
-                    title = "Chromatic Aberration",
-                    subtitle = "Simulate optical lens RGB dispersion on edges",
-                    enabled = isLiquidGlassEnabled,
-                ),
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = uiPreferences.liquidGlassSpringPhysics(),
-                    title = "Spring Physics Morphing",
-                    subtitle = "Viscoelastic squish and stretch velocity deformation",
-                    enabled = isLiquidGlassEnabled,
                 ),
             ),
         )
