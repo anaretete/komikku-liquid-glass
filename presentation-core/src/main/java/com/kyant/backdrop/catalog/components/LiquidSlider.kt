@@ -146,6 +146,8 @@ fun LiquidSlider(
             )
         }
 
+        val config = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current
+
         Box(
             Modifier
                 .graphicsLayer {
@@ -171,12 +173,16 @@ fun LiquidSlider(
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
                         if (progress > 0.001f) {
-                            blur(8f.dp.toPx() * (1f - progress))
+                            val effectiveBlur = (8f.dp.toPx() * (1f - progress) * config.blurMultiplier).coerceAtLeast(0f)
+                            if (effectiveBlur > 0.5f) {
+                                blur(effectiveBlur)
+                            }
                             try {
                                 lens(
-                                    (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    chromaticAberration = true
+                                    refractionHeight = (10f.dp.toPx() * progress * config.refractionMultiplier * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                    refractionAmount = (14f.dp.toPx() * progress * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                    depthEffect = config.depthEffect,
+                                    chromaticAberration = config.chromaticAberration,
                                 )
                             } catch (_: Throwable) {
                             }
@@ -219,7 +225,7 @@ fun LiquidSlider(
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
-                        drawRect(Color.White.copy(alpha = (1f - progress).coerceIn(0f, 1f)))
+                        drawRect(Color.White.copy(alpha = ((1f - progress) * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
                     }
                 )
                 .size(40f.dp, 24f.dp)

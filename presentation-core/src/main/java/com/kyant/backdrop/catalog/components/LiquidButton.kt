@@ -209,6 +209,8 @@ fun LiquidButton(
         MaterialTheme.colorScheme.onSurface
     }
 
+    val config = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current
+
     Row(
         modifier
             .defaultMinSize(minHeight = 44.dp)
@@ -218,9 +220,17 @@ fun LiquidButton(
                 shape = { shape },
                 effects = {
                     vibrancy()
-                    blur(3f.dp.toPx())
+                    val effectiveBlur = (3f.dp.toPx() * config.blurMultiplier).coerceAtLeast(0f)
+                    if (effectiveBlur > 0.5f) {
+                        blur(effectiveBlur)
+                    }
                     try {
-                        lens(14f.dp.toPx(), 24f.dp.toPx(), chromaticAberration = true)
+                        lens(
+                            refractionHeight = (14f.dp.toPx() * config.refractionMultiplier * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                            refractionAmount = (24f.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                            depthEffect = config.depthEffect,
+                            chromaticAberration = config.chromaticAberration,
+                        )
                     } catch (_: Throwable) {
                     }
                 },
@@ -269,7 +279,7 @@ fun LiquidButton(
                 onDrawSurface = {
                     if (tint.isSpecified) {
                         drawRect(tint, blendMode = BlendMode.Hue)
-                        drawRect(tint.copy(alpha = 0.78f))
+                        drawRect(tint.copy(alpha = (0.78f * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
                     }
                     if (surfaceColor.isSpecified) {
                         drawRect(surfaceColor)

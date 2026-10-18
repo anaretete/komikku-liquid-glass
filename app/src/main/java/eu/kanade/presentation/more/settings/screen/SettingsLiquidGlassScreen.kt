@@ -71,8 +71,15 @@ import eu.kanade.presentation.more.settings.Preference
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.border
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -108,6 +115,16 @@ object SettingsLiquidGlassScreen : SearchableSettings {
         val tintAlpha by uiPreferences.liquidGlassTintAlpha().collectAsState()
 
         return listOf(
+            Preference.PreferenceGroup(
+                title = "LIQUID GLASS ENGINE",
+                preferenceItems = persistentListOf(
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = uiPreferences.liquidGlassEnabled(),
+                        title = "Enable Liquid Glass",
+                        subtitle = "Enable real-time AGSL refraction, caustic dispersion, and spring physics across the entire interface",
+                    ),
+                ),
+            ),
             Preference.PreferenceGroup(
                 title = "OPTICAL LIQUID GLASS DEMO",
                 preferenceItems = persistentListOf(
@@ -231,7 +248,6 @@ object SettingsLiquidGlassScreen : SearchableSettings {
      */
     @Composable
     private fun WavyDigitalArtDemoCard() {
-        val isDark = isSystemInDarkTheme()
         val demoBackdrop = rememberLayerBackdrop()
 
         Column(
@@ -242,17 +258,17 @@ object SettingsLiquidGlassScreen : SearchableSettings {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(210.dp)
+                    .height(230.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF070710)),
+                    .background(Color.Black),
             ) {
-                // 1. Background layer: looping generative wavy digital art
+                // 1. Background layer: looping abstract wavy line art video
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .layerBackdrop(demoBackdrop),
                 ) {
-                    LiveWavyArtCanvas(modifier = Modifier.fillMaxSize())
+                    WavyDigitalArtVideo(modifier = Modifier.fillMaxSize())
                 }
 
                 // 2. Foreground layer: interactive draggable liquid glass bubble
@@ -267,12 +283,12 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         .align(Alignment.BottomStart)
                         .padding(12.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Black.copy(alpha = 0.55f))
+                        .background(Color.Black.copy(alpha = 0.65f))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        text = "Drag bubble over flowing waves",
-                        color = Color.White.copy(alpha = 0.85f),
+                        text = "Drag liquid glass bubble over looping video",
+                        color = Color.White.copy(alpha = 0.90f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                     )
@@ -282,97 +298,18 @@ object SettingsLiquidGlassScreen : SearchableSettings {
     }
 
     @Composable
-    private fun LiveWavyArtCanvas(modifier: Modifier = Modifier) {
-        val infiniteTransition = rememberInfiniteTransition(label = "wavy_art_transition")
-        val phase1 by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = (2f * PI).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 4200, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-            label = "phase1",
+    private fun WavyDigitalArtVideo(modifier: Modifier = Modifier) {
+        val context = LocalContext.current
+        AsyncImage(
+            model = remember(context) {
+                ImageRequest.Builder(context)
+                    .data(eu.kanade.tachiyomi.R.raw.wavy_art_loop)
+                    .build()
+            },
+            contentDescription = "Looping abstract geometric wavy line art",
+            contentScale = ContentScale.Crop,
+            modifier = modifier,
         )
-        val phase2 by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = (-2f * PI).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 6200, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-            label = "phase2",
-        )
-        val phase3 by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = (2f * PI).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 8500, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-            label = "phase3",
-        )
-
-        Canvas(modifier = modifier) {
-            val width = size.width
-            val height = size.height
-
-            // Ribbon wave configurations (color gradients, frequency, amplitudes)
-            val ribbons = listOf(
-                Triple(
-                    listOf(Color(0xFF00F5FF), Color(0xFF007AFF), Color(0xFF5856D6)),
-                    34.dp.toPx(),
-                    0.28f,
-                ),
-                Triple(
-                    listOf(Color(0xFFFF007F), Color(0xFFAF52DE), Color(0xFF5856D6)),
-                    42.dp.toPx(),
-                    0.44f,
-                ),
-                Triple(
-                    listOf(Color(0xFFFF375F), Color(0xFFFF9500), Color(0xFFFFCC00)),
-                    38.dp.toPx(),
-                    0.60f,
-                ),
-                Triple(
-                    listOf(Color(0xFF30D158), Color(0xFF64D2FF), Color(0xFF0A84FF)),
-                    32.dp.toPx(),
-                    0.76f,
-                ),
-            )
-
-            ribbons.forEachIndexed { index, (colors, amplitude, baseFraction) ->
-                val path = Path()
-                val step = 8f
-                var x = 0f
-                val baseY = height * baseFraction
-                val phaseOffset = when (index % 3) {
-                    0 -> phase1
-                    1 -> phase2
-                    else -> phase3
-                } + (index * 0.9f)
-
-                path.moveTo(0f, baseY)
-                while (x <= width + step) {
-                    val normalizedX = x / width
-                    val angle1 = normalizedX * 2f * PI.toFloat() * 1.8f + phaseOffset
-                    val angle2 = normalizedX * 2f * PI.toFloat() * 3.2f - phaseOffset * 0.7f
-                    val y = baseY + (sin(angle1) * amplitude * 0.7f) + (cos(angle2) * amplitude * 0.35f)
-                    path.lineTo(x, y)
-                    x += step
-                }
-
-                // Draw luminous flowing ribbon
-                drawPath(
-                    path = path,
-                    brush = Brush.horizontalGradient(
-                        colors = colors,
-                        startX = 0f,
-                        endX = width,
-                    ),
-                    style = Stroke(width = (4f + index * 1.2f).dp.toPx()),
-                )
-            }
-        }
     }
 
     @Composable
@@ -380,9 +317,10 @@ object SettingsLiquidGlassScreen : SearchableSettings {
         backdrop: Backdrop,
         modifier: Modifier = Modifier,
     ) {
+        val config = LocalLiquidGlassConfig.current
         var offset by remember { mutableStateOf(Offset.Zero) }
         var isDragging by remember { mutableStateOf(false) }
-        val bubbleSize = 78.dp
+        val bubbleSize = 82.dp
 
         BoxWithConstraints(modifier = modifier) {
             val maxW = constraints.maxWidth.toFloat()
@@ -399,13 +337,13 @@ object SettingsLiquidGlassScreen : SearchableSettings {
             val clampedY = currentPos.y.coerceIn(0f, (maxH - bubbleSizePx).coerceAtLeast(0f))
 
             val dragScale by animateFloatAsState(
-                targetValue = if (isDragging) 1.18f else 1f,
+                targetValue = if (isDragging && config.springPhysicsEnabled) 1.18f else 1f,
                 animationSpec = spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMediumLow),
                 label = "bubbleScale",
             )
 
-            Box(
-                modifier = Modifier
+            val bubbleModifier = if (config.enabled) {
+                Modifier
                     .offset { IntOffset(clampedX.roundToInt(), clampedY.roundToInt()) }
                     .size(bubbleSize)
                     .pointerInput(Unit) {
@@ -428,13 +366,19 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         shape = { CircleShape },
                         effects = {
                             vibrancy()
-                            blur(2.dp.toPx())
-                            lens(
-                                refractionHeight = 26.dp.toPx(),
-                                refractionAmount = 38.dp.toPx(),
-                                depthEffect = true,
-                                chromaticAberration = true,
-                            )
+                            val blurVal = (2.dp.toPx() * config.blurMultiplier).coerceAtLeast(0f)
+                            if (blurVal > 0.5f) {
+                                blur(blurVal)
+                            }
+                            try {
+                                lens(
+                                    refractionHeight = (28.dp.toPx() * config.refractionMultiplier * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                    refractionAmount = (42.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                    depthEffect = config.depthEffect,
+                                    chromaticAberration = config.chromaticAberration,
+                                )
+                            } catch (_: Throwable) {
+                            }
                         },
                         highlight = { Highlight.Default },
                         shadow = {
@@ -446,13 +390,35 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         innerShadow = {
                             InnerShadow(
                                 radius = 6.dp,
-                                color = Color.White.copy(alpha = 0.55f),
+                                color = Color.White.copy(alpha = (0.55f * config.tintAlphaMultiplier).coerceIn(0f, 1f)),
                             )
                         },
                         onDrawSurface = {
-                            drawRect(Color.White.copy(alpha = 0.08f))
+                            drawRect(Color.White.copy(alpha = (0.08f * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
                         },
-                    ),
+                    )
+            } else {
+                Modifier
+                    .offset { IntOffset(clampedX.roundToInt(), clampedY.roundToInt()) }
+                    .size(bubbleSize)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { isDragging = true },
+                            onDragEnd = { isDragging = false },
+                            onDragCancel = { isDragging = false },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                offset += dragAmount
+                            },
+                        )
+                    }
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.25f))
+                    .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+            }
+
+            Box(
+                modifier = bubbleModifier,
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -469,6 +435,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
     @Composable
     private fun LiveGlassPreviewCard() {
         val isDark = isSystemInDarkTheme()
+        val config = LocalLiquidGlassConfig.current
         var previewToggle by remember { mutableStateOf(true) }
         var previewSliderValue by remember { mutableFloatStateOf(0.65f) }
         val cardBg = if (isDark) Color(0xFF1C1C1E) else Color(0xFFF2F2F7)
@@ -501,7 +468,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            text = "Live refraction & spring preview",
+                            text = if (config.enabled) "Live refraction & spring preview" else "Standard preview (Glass disabled)",
                             color = if (isDark) Color(0xFF8E8E93) else Color(0xFF6C6C70),
                             fontSize = 12.sp,
                         )
@@ -510,6 +477,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         selected = { previewToggle },
                         onSelect = { previewToggle = it },
                         backdrop = backdrop,
+                        accentColor = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -521,6 +489,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         value = { previewSliderValue },
                         onValueChange = { previewSliderValue = it },
                         backdrop = backdrop,
+                        accentColor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -540,6 +509,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                     LiquidButton(
                         onClick = {},
                         backdrop = backdrop,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(

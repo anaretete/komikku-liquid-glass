@@ -20,6 +20,7 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.gif.AnimatedImageDecoder
 import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
@@ -261,6 +262,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 // NetworkFetcher.Factory
                 add(OkHttpNetworkFetcherFactory(callFactoryLazy::value))
                 // Decoder.Factory
+                add(AnimatedImageDecoder.Factory())
                 add(TachiyomiImageDecoder.Factory())
                 // Fetcher.Factory
                 add(BufferedSourceFetcher.Factory())
