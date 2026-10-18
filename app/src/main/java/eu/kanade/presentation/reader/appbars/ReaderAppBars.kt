@@ -9,7 +9,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -256,11 +259,12 @@ fun ReaderAppBars(
                         .windowInsetsPadding(WindowInsets.navigationBars)
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                         .height(56.dp)
-                        .liquidGlassSurface(
-                            shape = Capsule(),
-                            blurRadius = 18.dp,
-                            refractionHeight = 22.dp,
-                            refractionAmount = 30.dp,
+                        .clip(Capsule())
+                        .background(if (isSystemInDarkTheme()) Color(0xCC1C1C1E) else Color(0xCCFFFFFF))
+                        .border(
+                            0.5.dp,
+                            if (isSystemInDarkTheme()) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
+                            Capsule(),
                         )
                 } else {
                     Modifier

@@ -76,7 +76,8 @@ fun MangaChapterListItem(
     // KMK -->
     val isGlass = LocalLiquidGlassConfig.current.enabled
     val swipeBackground = MaterialTheme.colorScheme.primaryContainer
-    val swipeStart = remember(chapterSwipeStartAction, read, bookmark, downloadStateProvider(), isGlass) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val swipeStart = remember(chapterSwipeStartAction, read, bookmark, downloadStateProvider(), isGlass, primaryColor) {
         // KMK <--
         getSwipeAction(
             action = chapterSwipeStartAction,
@@ -85,11 +86,12 @@ fun MangaChapterListItem(
             downloadState = downloadStateProvider(),
             background = swipeBackground,
             isGlass = isGlass,
+            primaryColor = primaryColor,
             onSwipe = { onChapterSwipe(chapterSwipeStartAction) },
         )
     }
     // KMK -->
-    val swipeEnd = remember(chapterSwipeEndAction, read, bookmark, downloadStateProvider(), isGlass) {
+    val swipeEnd = remember(chapterSwipeEndAction, read, bookmark, downloadStateProvider(), isGlass, primaryColor) {
         // KMK <--
         getSwipeAction(
             action = chapterSwipeEndAction,
@@ -98,6 +100,7 @@ fun MangaChapterListItem(
             downloadState = downloadStateProvider(),
             background = swipeBackground,
             isGlass = isGlass,
+            primaryColor = primaryColor,
             onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
         )
     }
@@ -137,7 +140,7 @@ fun MangaChapterListItem(
                             modifier = Modifier
                                 .height(8.dp)
                                 .padding(end = 4.dp),
-                            tint = if (isGlass) Color(0xFF0A84FF) else MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
                     if (bookmark) {
@@ -227,12 +230,13 @@ internal fun getSwipeAction(
     downloadState: Download.State,
     background: Color,
     isGlass: Boolean = false,
+    primaryColor: Color = background,
     onSwipe: () -> Unit,
 ): me.saket.swipe.SwipeAction? {
     return when (action) {
         LibraryPreferences.ChapterSwipeAction.ToggleRead -> swipeAction(
             icon = if (!read) Icons.Outlined.Done else Icons.Outlined.RemoveDone,
-            background = if (isGlass) Color(0xFF007AFF) else background,
+            background = if (isGlass) primaryColor else background,
             iconTint = if (isGlass) Color.White else null,
             isUndo = read,
             onSwipe = onSwipe,

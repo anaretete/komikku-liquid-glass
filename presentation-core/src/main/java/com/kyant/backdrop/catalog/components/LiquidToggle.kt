@@ -161,52 +161,52 @@ fun LiquidToggle(
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        if (progress > 0.001f) {
-                            blur(8f.dp.toPx() * (1f - progress))
+                        blur(8f.dp.toPx() * (1f - progress))
+                        try {
                             lens(
-                                (5f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                5f.dp.toPx() * progress,
+                                10f.dp.toPx() * progress,
                                 chromaticAberration = true
                             )
+                        } catch (_: Throwable) {
                         }
                     },
                     highlight = {
                         val progress = dampedDragAnimation.pressProgress
-                        if (progress > 0.001f) {
-                            Highlight.Ambient.copy(
-                                width = Highlight.Ambient.width / 1.5f,
-                                blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                                alpha = progress
-                            )
-                        } else null
+                        Highlight.Ambient.copy(
+                            width = Highlight.Ambient.width / 1.5f,
+                            blurRadius = Highlight.Ambient.blurRadius / 1.5f,
+                            alpha = progress
+                        )
                     },
                     shadow = {
                         Shadow(
-                            radius = 3f.dp,
-                            color = Color.Black.copy(alpha = 0.14f)
+                            radius = 4f.dp,
+                            color = Color.Black.copy(alpha = 0.05f)
                         )
                     },
                     innerShadow = {
                         val progress = dampedDragAnimation.pressProgress
-                        if (progress > 0.001f) {
-                            InnerShadow(
-                                radius = 4f.dp * progress,
-                                alpha = progress
-                            )
-                        } else null
+                        InnerShadow(
+                            radius = 4f.dp * progress,
+                            alpha = progress
+                        )
                     },
                     layerBlock = {
-                        scaleX = dampedDragAnimation.scaleX
-                        scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 50f
-                        val denomX = (1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
-                        val factorY = 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
-                        scaleX = (scaleX / denomX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
-                        scaleY = (scaleY * factorY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        try {
+                            val velocity = dampedDragAnimation.velocity / 50f
+                            val denomX = (1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
+                            val factorY = (1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
+                            scaleX = (dampedDragAnimation.scaleX / denomX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                            scaleY = (dampedDragAnimation.scaleY * factorY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        } catch (_: Throwable) {
+                            scaleX = 1f
+                            scaleY = 1f
+                        }
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
-                        drawRect(Color.White.copy(alpha = (1f - progress).coerceIn(0f, 1f)))
+                        drawRect(Color.White.copy(alpha = 1f - progress))
                     }
                 )
                 .size(40f.dp, 24f.dp)

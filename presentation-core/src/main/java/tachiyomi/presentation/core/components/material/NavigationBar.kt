@@ -40,7 +40,6 @@ fun NavigationBar(
 ) {
     val isGlass = LocalLiquidGlassConfig.current.enabled
     if (isGlass) {
-        val navBarExportedBackdrop = rememberLayerBackdrop()
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -52,21 +51,18 @@ fun NavigationBar(
                     blurRadius = 18.dp,
                     refractionHeight = 24.dp,
                     refractionAmount = 36.dp,
-                    exportedBackdrop = navBarExportedBackdrop,
                 )
                 .padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center,
         ) {
-            CompositionLocalProvider(LocalLayerBackdrop provides navBarExportedBackdrop) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .selectableGroup(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                    content = content,
-                )
-            }
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .selectableGroup(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+                content = content,
+            )
         }
     } else {
         androidx.compose.material3.Surface(

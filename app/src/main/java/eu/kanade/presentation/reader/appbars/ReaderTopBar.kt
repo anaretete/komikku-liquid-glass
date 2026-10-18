@@ -1,5 +1,7 @@
 package eu.kanade.presentation.reader.appbars
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import com.kyant.shapes.Capsule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
@@ -60,7 +63,6 @@ fun ReaderTopBar(
     val isDark = isSystemInDarkTheme()
 
     if (isGlass) {
-        val glassSurfaceColor = if (isDark) Color(0x991C1C1E) else Color(0xBBFFFFFF)
         var showOverflow by remember { mutableStateOf(false) }
         val hasOverflow = onOpenInWebView != null || onOpenInBrowser != null || onShare != null
 
@@ -69,10 +71,19 @@ fun ReaderTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // Detached Circular Frosted Glass Back Button (42dp) with viscoelastic drag morphing
-            LiquidIconButton(
-                onClick = navigateUp,
-                size = 42.dp,
+            // Detached Circular Frosted Glass Back Button (42dp)
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
+                    .border(
+                        0.5.dp,
+                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
+                        CircleShape,
+                    )
+                    .clickable(onClick = navigateUp),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
@@ -90,12 +101,12 @@ fun ReaderTopBar(
             ) {
                 Column(
                     modifier = Modifier
-                        .liquidGlassSurface(
-                            shape = Capsule(),
-                            blurRadius = 16.dp,
-                            refractionHeight = 18.dp,
-                            refractionAmount = 24.dp,
-                            surfaceColor = glassSurfaceColor,
+                        .clip(Capsule())
+                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
+                        .border(
+                            0.5.dp,
+                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
+                            Capsule(),
                         )
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                         .then(if (onClickTopAppBar != null) Modifier.clickable(onClick = onClickTopAppBar) else Modifier),
@@ -132,9 +143,18 @@ fun ReaderTopBar(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                LiquidIconButton(
-                    onClick = onToggleBookmarked,
-                    size = 42.dp,
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
+                        .border(
+                            0.5.dp,
+                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
+                            CircleShape,
+                        )
+                        .clickable(onClick = onToggleBookmarked),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
@@ -147,9 +167,18 @@ fun ReaderTopBar(
 
                 if (hasOverflow) {
                     Box {
-                        LiquidIconButton(
-                            onClick = { showOverflow = true },
-                            size = 42.dp,
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
+                                .border(
+                                    0.5.dp,
+                                    if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
+                                    CircleShape,
+                                )
+                                .clickable(onClick = { showOverflow = true }),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.MoreHoriz,

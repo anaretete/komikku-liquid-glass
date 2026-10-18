@@ -579,7 +579,7 @@ class AboutScreen : Screen() {
                 }
 
                 isPreviewBuildType -> {
-                    "Beta r${BuildConfig.COMMIT_COUNT}".let {
+                    "v${BuildConfig.VERSION_NAME}".let {
                         if (withBuildDate) {
                             "$it (${BuildConfig.COMMIT_SHA}, ${getFormattedBuildTime()})"
                         } else {

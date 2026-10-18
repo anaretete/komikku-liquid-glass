@@ -1,9 +1,6 @@
 package eu.kanade.presentation.reader.settings
 
-import tachiyomi.presentation.core.components.material.FilterChip
-import tachiyomi.presentation.core.components.material.CupertinoGroupedSelectionCard
-import tachiyomi.presentation.core.components.material.CupertinoGroupedSegmentedControl
-import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,42 +31,24 @@ internal fun ReadingModePage(screenModel: ReaderSettingsScreenModel) {
     val manga by screenModel.mangaFlow.collectAsState()
 
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }
-    val orientation = remember(manga) { ReaderOrientation.fromPreference(manga?.readerOrientation?.toInt()) }
-    val isGlass = LocalLiquidGlassConfig.current.enabled
-
-    if (isGlass) {
-        CupertinoGroupedSelectionCard(
-            title = stringResource(MR.strings.pref_category_reading_mode),
-            options = ReadingMode.entries,
-            selected = readingMode,
-            onSelect = { screenModel.onChangeReadingMode(it) },
-            labelProvider = { stringResource(it.stringRes) },
-        )
-        CupertinoGroupedSelectionCard(
-            title = stringResource(MR.strings.rotation_type),
-            options = ReaderOrientation.entries,
-            selected = orientation,
-            onSelect = { screenModel.onChangeOrientation(it) },
-            labelProvider = { stringResource(it.stringRes) },
-        )
-    } else {
-        SettingsChipRow(MR.strings.pref_category_reading_mode) {
-            ReadingMode.entries.map {
-                FilterChip(
-                    selected = it == readingMode,
-                    onClick = { screenModel.onChangeReadingMode(it) },
-                    label = { Text(stringResource(it.stringRes)) },
-                )
-            }
+    SettingsChipRow(MR.strings.pref_category_reading_mode) {
+        ReadingMode.entries.map {
+            FilterChip(
+                selected = it == readingMode,
+                onClick = { screenModel.onChangeReadingMode(it) },
+                label = { Text(stringResource(it.stringRes)) },
+            )
         }
-        SettingsChipRow(MR.strings.rotation_type) {
-            ReaderOrientation.entries.map {
-                FilterChip(
-                    selected = it == orientation,
-                    onClick = { screenModel.onChangeOrientation(it) },
-                    label = { Text(stringResource(it.stringRes)) },
-                )
-            }
+    }
+
+    val orientation = remember(manga) { ReaderOrientation.fromPreference(manga?.readerOrientation?.toInt()) }
+    SettingsChipRow(MR.strings.rotation_type) {
+        ReaderOrientation.entries.map {
+            FilterChip(
+                selected = it == orientation,
+                onClick = { screenModel.onChangeOrientation(it) },
+                label = { Text(stringResource(it.stringRes)) },
+            )
         }
     }
 
@@ -102,67 +81,37 @@ private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
         onSelectInvertMode = screenModel.preferences.pagerNavInverted()::set,
     )
 
-    val isGlass = LocalLiquidGlassConfig.current.enabled
-
     val imageScaleType by screenModel.preferences.imageScaleType().collectAsState()
-    if (isGlass) {
-        CupertinoGroupedSelectionCard(
-            title = stringResource(MR.strings.pref_image_scale_type),
-            options = ReaderPreferences.ImageScaleType.indices.map { it + 1 },
-            selected = imageScaleType,
-            onSelect = { screenModel.preferences.imageScaleType().set(it) },
-            labelProvider = { stringResource(ReaderPreferences.ImageScaleType.getOrElse(it - 1) { MR.strings.scale_type_fit_screen }) },
-        )
-    } else {
-        SettingsChipRow(MR.strings.pref_image_scale_type) {
-            ReaderPreferences.ImageScaleType.mapIndexed { index, it ->
-                FilterChip(
-                    selected = imageScaleType == index + 1,
-                    onClick = { screenModel.preferences.imageScaleType().set(index + 1) },
-                    label = { Text(stringResource(it)) },
-                )
-            }
+    SettingsChipRow(MR.strings.pref_image_scale_type) {
+        ReaderPreferences.ImageScaleType.mapIndexed { index, it ->
+            FilterChip(
+                selected = imageScaleType == index + 1,
+                onClick = { screenModel.preferences.imageScaleType().set(index + 1) },
+                label = { Text(stringResource(it)) },
+            )
         }
     }
 
     val zoomStart by screenModel.preferences.zoomStart().collectAsState()
-    if (isGlass) {
-        CupertinoGroupedSegmentedControl(
-            title = stringResource(MR.strings.pref_zoom_start),
-            options = ReaderPreferences.ZoomStart.map { stringResource(it) },
-            selectedIndex = (zoomStart - 1).coerceIn(0, ReaderPreferences.ZoomStart.size - 1),
-            onSelect = { screenModel.preferences.zoomStart().set(it + 1) },
-        )
-    } else {
-        SettingsChipRow(MR.strings.pref_zoom_start) {
-            ReaderPreferences.ZoomStart.mapIndexed { index, it ->
-                FilterChip(
-                    selected = zoomStart == index + 1,
-                    onClick = { screenModel.preferences.zoomStart().set(index + 1) },
-                    label = { Text(stringResource(it)) },
-                )
-            }
+    SettingsChipRow(MR.strings.pref_zoom_start) {
+        ReaderPreferences.ZoomStart.mapIndexed { index, it ->
+            FilterChip(
+                selected = zoomStart == index + 1,
+                onClick = { screenModel.preferences.zoomStart().set(index + 1) },
+                label = { Text(stringResource(it)) },
+            )
         }
     }
 
     // SY -->
     val pageLayout by screenModel.preferences.pageLayout().collectAsState()
-    if (isGlass) {
-        CupertinoGroupedSegmentedControl(
-            title = stringResource(SYMR.strings.page_layout),
-            options = ReaderPreferences.PageLayouts.map { stringResource(it) },
-            selectedIndex = pageLayout.coerceIn(0, ReaderPreferences.PageLayouts.size - 1),
-            onSelect = { screenModel.preferences.pageLayout().set(it) },
-        )
-    } else {
-        SettingsChipRow(SYMR.strings.page_layout) {
-            ReaderPreferences.PageLayouts.mapIndexed { index, it ->
-                FilterChip(
-                    selected = pageLayout == index,
-                    onClick = { screenModel.preferences.pageLayout().set(index) },
-                    label = { Text(stringResource(it)) },
-                )
-            }
+    SettingsChipRow(SYMR.strings.page_layout) {
+        ReaderPreferences.PageLayouts.mapIndexed { index, it ->
+            FilterChip(
+                selected = pageLayout == index,
+                onClick = { screenModel.preferences.pageLayout().set(index) },
+                label = { Text(stringResource(it)) },
+            )
         }
     }
     // SY <--
@@ -245,22 +194,13 @@ private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
     // KMK <--
 
     val centerMarginType by screenModel.preferences.centerMarginType().collectAsState()
-    if (isGlass) {
-        CupertinoGroupedSegmentedControl(
-            title = stringResource(SYMR.strings.pref_center_margin),
-            options = ReaderPreferences.CenterMarginTypes.map { stringResource(it) },
-            selectedIndex = centerMarginType.coerceIn(0, ReaderPreferences.CenterMarginTypes.size - 1),
-            onSelect = { screenModel.preferences.centerMarginType().set(it) },
-        )
-    } else {
-        SettingsChipRow(SYMR.strings.pref_center_margin) {
-            ReaderPreferences.CenterMarginTypes.mapIndexed { index, it ->
-                FilterChip(
-                    selected = centerMarginType == index,
-                    onClick = { screenModel.preferences.centerMarginType().set(index) },
-                    label = { Text(stringResource(it)) },
-                )
-            }
+    SettingsChipRow(SYMR.strings.pref_center_margin) {
+        ReaderPreferences.CenterMarginTypes.mapIndexed { index, it ->
+            FilterChip(
+                selected = centerMarginType == index,
+                onClick = { screenModel.preferences.centerMarginType().set(index) },
+                label = { Text(stringResource(it)) },
+            )
         }
     }
     // SY <--
@@ -274,7 +214,6 @@ private fun WebtoonViewerSettings(
     // KMK <--
 ) {
     val numberFormat = remember { NumberFormat.getPercentInstance() }
-    val isGlass = LocalLiquidGlassConfig.current.enabled
 
     HeadingItem(MR.strings.webtoon_viewer)
 
@@ -292,23 +231,13 @@ private fun WebtoonViewerSettings(
     val webtoonScaleType by webtoonScaleTypePref.collectAsState()
     val webtoonSmartScaleLongStripGap = screenModel.preferences.longStripGapSmartScale().get()
     if (readingMode != ReadingMode.CONTINUOUS_VERTICAL || webtoonSmartScaleLongStripGap) {
-        if (isGlass) {
-            CupertinoGroupedSelectionCard(
-                title = stringResource(KMR.strings.pref_webtoon_scale_type),
-                options = ReaderPreferences.WebtoonScaleType.entries,
-                selected = webtoonScaleType,
-                onSelect = { webtoonScaleTypePref.set(it) },
-                labelProvider = { stringResource(it.titleRes) },
-            )
-        } else {
-            SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
-                ReaderPreferences.WebtoonScaleType.entries.forEach { scaleType ->
-                    FilterChip(
-                        selected = webtoonScaleType == scaleType,
-                        onClick = { webtoonScaleTypePref.set(scaleType) },
-                        label = { Text(stringResource(scaleType.titleRes)) },
-                    )
-                }
+        SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
+            ReaderPreferences.WebtoonScaleType.entries.forEach { scaleType ->
+                FilterChip(
+                    selected = webtoonScaleType == scaleType,
+                    onClick = { webtoonScaleTypePref.set(scaleType) },
+                    label = { Text(stringResource(scaleType.titleRes)) },
+                )
             }
         }
     }
@@ -411,44 +340,24 @@ private fun TapZonesItems(
     invertMode: ReaderPreferences.TappingInvertMode,
     onSelectInvertMode: (ReaderPreferences.TappingInvertMode) -> Unit,
 ) {
-    val isGlass = LocalLiquidGlassConfig.current.enabled
-    if (isGlass) {
-        CupertinoGroupedSelectionCard(
-            title = stringResource(MR.strings.pref_viewer_nav),
-            options = ReaderPreferences.TapZones.indices.toList(),
-            selected = selected,
-            onSelect = onSelect,
-            labelProvider = { stringResource(ReaderPreferences.TapZones.getOrElse(it) { MR.strings.label_default }) },
-        )
-        if (selected != 5) {
-            CupertinoGroupedSelectionCard(
-                title = stringResource(MR.strings.pref_read_with_tapping_inverted),
-                options = ReaderPreferences.TappingInvertMode.entries,
-                selected = invertMode,
-                onSelect = onSelectInvertMode,
-                labelProvider = { stringResource(it.titleRes) },
+    SettingsChipRow(MR.strings.pref_viewer_nav) {
+        ReaderPreferences.TapZones.mapIndexed { index, it ->
+            FilterChip(
+                selected = selected == index,
+                onClick = { onSelect(index) },
+                label = { Text(stringResource(it)) },
             )
         }
-    } else {
-        SettingsChipRow(MR.strings.pref_viewer_nav) {
-            ReaderPreferences.TapZones.mapIndexed { index, it ->
-                FilterChip(
-                    selected = selected == index,
-                    onClick = { onSelect(index) },
-                    label = { Text(stringResource(it)) },
-                )
-            }
-        }
+    }
 
-        if (selected != 5) {
-            SettingsChipRow(MR.strings.pref_read_with_tapping_inverted) {
-                ReaderPreferences.TappingInvertMode.entries.map {
-                    FilterChip(
-                        selected = it == invertMode,
-                        onClick = { onSelectInvertMode(it) },
-                        label = { Text(stringResource(it.titleRes)) },
-                    )
-                }
+    if (selected != 5) {
+        SettingsChipRow(MR.strings.pref_read_with_tapping_inverted) {
+            ReaderPreferences.TappingInvertMode.entries.map {
+                FilterChip(
+                    selected = it == invertMode,
+                    onClick = { onSelectInvertMode(it) },
+                    label = { Text(stringResource(it.titleRes)) },
+                )
             }
         }
     }

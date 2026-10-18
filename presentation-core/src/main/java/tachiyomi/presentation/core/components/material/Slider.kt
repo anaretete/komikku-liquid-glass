@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
@@ -131,7 +132,7 @@ fun SolidCupertinoSlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF007AFF) else Color(0xFF0A84FF),
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val isLightTheme = !isSystemInDarkTheme()
     val trackColor = if (isLightTheme) Color(0xFF787878).copy(alpha = 0.2f) else Color(0xFF787880).copy(alpha = 0.36f)
@@ -259,7 +260,7 @@ fun Slider(
     },
 ) {
     val isGlass = LocalLiquidGlassConfig.current.enabled
-    if (isGlass) {
+    if (isGlass && backdrop != null) {
         CupertinoSlider(
             value = value,
             onValueChange = onValueChange,
@@ -269,7 +270,7 @@ fun Slider(
             steps = steps,
             onValueChangeFinished = onValueChangeFinished,
             backdrop = backdrop,
-            accentColor = accentColor,
+            accentColor = accentColor ?: MaterialTheme.colorScheme.primary,
         )
     } else {
         SolidCupertinoSlider(
@@ -280,7 +281,7 @@ fun Slider(
             valueRange = valueRange,
             steps = steps,
             onValueChangeFinished = onValueChangeFinished,
-            accentColor = accentColor ?: if (!isSystemInDarkTheme()) Color(0xFF007AFF) else Color(0xFF0A84FF),
+            accentColor = accentColor ?: MaterialTheme.colorScheme.primary,
         )
     }
 }

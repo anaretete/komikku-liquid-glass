@@ -424,7 +424,7 @@ fun TriStateItem(
                 modifier = Modifier.weight(1f),
             )
             when (state) {
-                TriState.ENABLED_IS -> CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                TriState.ENABLED_IS -> CupertinoCheckmark(checked = true, tint = MaterialTheme.colorScheme.primary)
                 TriState.DISABLED -> CupertinoCheckmark(checked = false)
                 TriState.ENABLED_NOT -> {
                     Box(

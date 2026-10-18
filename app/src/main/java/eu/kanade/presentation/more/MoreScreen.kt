@@ -191,7 +191,7 @@ fun MoreScreen(
                                     iconContent = {
                                         CupertinoIconBadge(
                                             icon = Icons.Outlined.NewReleases,
-                                            backgroundColor = Color(0xFF0A84FF),
+                                            backgroundColor = MaterialTheme.colorScheme.primary,
                                         )
                                     },
                                     onPreferenceClick = onClickUpdates,

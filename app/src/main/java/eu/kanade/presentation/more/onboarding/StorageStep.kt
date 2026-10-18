@@ -79,7 +79,7 @@ internal class StorageStep : OnboardingStep {
                             context.toast(MR.strings.file_picker_error)
                         }
                     },
-                    tint = androidx.compose.ui.graphics.Color(0xFF007AFF),
+                    tint = MaterialTheme.colorScheme.primary,
                     shape = com.kyant.shapes.Capsule(),
                 ) {
                     Text(
@@ -114,7 +114,7 @@ internal class StorageStep : OnboardingStep {
                 com.kyant.backdrop.catalog.components.LiquidButton(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     onClick = { handler.openUri(SettingsDataScreen.HELP_URL) },
-                    tint = androidx.compose.ui.graphics.Color(0xFF007AFF),
+                    tint = MaterialTheme.colorScheme.primary,
                     shape = com.kyant.shapes.Capsule(),
                 ) {
                     Text(

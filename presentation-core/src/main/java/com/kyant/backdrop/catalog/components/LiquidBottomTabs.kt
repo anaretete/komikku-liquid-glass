@@ -131,15 +131,12 @@ fun LiquidBottomTabs(
                 }
             )
         }
-        val currentSelectedTabIndex by rememberUpdatedState(selectedTabIndex)
-        LaunchedEffect(Unit) {
-            snapshotFlow { currentSelectedTabIndex() }
-                .collectLatest { index ->
-                    if (currentIndex != index || dampedDragAnimation.targetValue != index.toFloat()) {
-                        currentIndex = index
-                        dampedDragAnimation.animateToValue(index.toFloat())
-                    }
-                }
+        val selectedIndex = selectedTabIndex()
+        LaunchedEffect(selectedIndex) {
+            if (currentIndex != selectedIndex || dampedDragAnimation.targetValue != selectedIndex.toFloat()) {
+                currentIndex = selectedIndex
+                dampedDragAnimation.animateToValue(selectedIndex.toFloat())
+            }
         }
 
         val interactiveHighlight = remember(animationScope) {
@@ -205,10 +202,13 @@ fun LiquidBottomTabs(
                             vibrancy()
                             blur(8f.dp.toPx())
                             if (progress > 0.001f) {
-                                lens(
-                                    (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                )
+                                try {
+                                    lens(
+                                        (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                        (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    )
+                                } catch (_: Throwable) {
+                                }
                             }
                         },
                         highlight = {
@@ -220,8 +220,7 @@ fun LiquidBottomTabs(
                     .then(interactiveHighlight.modifier)
                     .height(56f.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 4f.dp)
-                    .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
+                    .padding(horizontal = 4f.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 content = content
             )
@@ -243,11 +242,14 @@ fun LiquidBottomTabs(
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
                         if (progress > 0.001f) {
-                            lens(
-                                (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                chromaticAberration = true,
-                            )
+                            try {
+                                lens(
+                                    (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    chromaticAberration = true,
+                                )
+                            } catch (_: Throwable) {
+                            }
                         }
                     },
                     highlight = {
@@ -275,10 +277,11 @@ fun LiquidBottomTabs(
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
                         drawRect(
-                            if (isLightTheme) Color.Black.copy(0.1f)
-                            else Color.White.copy(0.1f),
+                            if (isLightTheme) Color.Black.copy(0.08f)
+                            else Color.White.copy(0.08f),
                             alpha = 1f - progress
                         )
+                        drawRect(accentColor.copy(alpha = if (isLightTheme) 0.12f else 0.20f), alpha = 1f - progress)
                         drawRect(Color.Black.copy(alpha = 0.03f * progress))
                     }
                 )

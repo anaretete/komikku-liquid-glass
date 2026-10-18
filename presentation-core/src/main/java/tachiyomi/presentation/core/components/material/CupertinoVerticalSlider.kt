@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,9 +68,7 @@ fun CupertinoVerticalSlider(
         val baseColor = if (isDark) Color(0xFF16161A) else Color(0xFFF2F2F6)
         drawRect(baseColor)
     }
-    val accentColor =
-        if (isLightTheme) Color(0xFF007AFF)
-        else Color(0xFF0A84FF)
+    val accentColor = MaterialTheme.colorScheme.primary
     val trackColor =
         if (isLightTheme) Color(0xFF787878).copy(alpha = 0.2f)
         else Color(0xFF787880).copy(alpha = 0.36f)
@@ -220,7 +219,7 @@ fun CupertinoVerticalSlider(
             Modifier
                 .graphicsLayer {
                     val progress = dampedDragAnimation.progress.coerceIn(0f, 1f)
-                    translationY = maxTravel * progress
+                    translationY = (maxTravel * progress).takeIf { it.isFinite() } ?: 0f
                 }
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(
@@ -239,11 +238,14 @@ fun CupertinoVerticalSlider(
                         val progress = dampedDragAnimation.pressProgress
                         if (progress > 0.001f) {
                             blur(8f.dp.toPx() * (1f - progress))
-                            lens(
-                                (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                chromaticAberration = true,
-                            )
+                            try {
+                                lens(
+                                    (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    chromaticAberration = true,
+                                )
+                            } catch (_: Throwable) {
+                            }
                         }
                     },
                     highlight = {
@@ -268,11 +270,16 @@ fun CupertinoVerticalSlider(
                         )
                     },
                     layerBlock = {
-                        val velocity = (dampedDragAnimation.velocity / 10f).coerceIn(-0.25f, 0.25f)
-                        val denomY = (1f - velocity * 0.75f).coerceAtLeast(0.01f)
-                        val factorX = (1f - velocity * 0.25f).coerceAtLeast(0.01f)
-                        scaleY = (dampedDragAnimation.scaleY / denomY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
-                        scaleX = (dampedDragAnimation.scaleX * factorX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        try {
+                            val velocity = (dampedDragAnimation.velocity / 10f).coerceIn(-0.25f, 0.25f)
+                            val denomY = (1f - velocity * 0.75f).coerceAtLeast(0.01f)
+                            val factorX = (1f - velocity * 0.25f).coerceAtLeast(0.01f)
+                            scaleY = (dampedDragAnimation.scaleY / denomY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                            scaleX = (dampedDragAnimation.scaleX * factorX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        } catch (_: Throwable) {
+                            scaleX = 1f
+                            scaleY = 1f
+                        }
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress

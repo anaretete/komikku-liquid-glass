@@ -308,7 +308,11 @@ object HomeScreen : Screen() {
         modifier: Modifier = Modifier,
         alwaysShowLabel: Boolean = true,
     ) {
-        val backdrop = LocalLayerBackdrop.current ?: rememberLayerBackdrop()
+        val isDark = isSystemInDarkTheme()
+        val backdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+            val baseColor = if (isDark) Color(0xFF16161A) else Color(0xFFF2F2F6)
+            drawRect(baseColor)
+        }
         val selectedIndex by remember(currentTab, tabs) {
             derivedStateOf {
                 tabs.indexOfFirst { it::class == currentTab::class || it.key == currentTab.key }.coerceAtLeast(0)
@@ -337,23 +341,29 @@ object HomeScreen : Screen() {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 tabs.forEachIndexed { index, tab ->
+                    val isSelected = selectedIndex == index
                     LiquidBottomTab(
                         onClick = {
                             onTabSelected(tab)
                         },
                     ) {
-                        NavigationIconItem(tab)
-                        if (alwaysShowLabel) {
-                            Text(
-                                text = tab.options.title,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 10.sp,
-                                    fontWeight = if (selectedIndex == index) FontWeight.SemiBold else FontWeight.Medium,
-                                    letterSpacing = (-0.2).sp,
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                        CompositionLocalProvider(
+                            LocalContentColor provides if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        ) {
+                            NavigationIconItem(tab)
+                            if (alwaysShowLabel) {
+                                Text(
+                                    text = tab.options.title,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                        letterSpacing = (-0.2).sp,
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
                 }

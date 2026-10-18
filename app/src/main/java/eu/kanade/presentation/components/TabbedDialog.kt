@@ -155,7 +155,7 @@ fun TabbedDialog(
                                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                         ),
                                         color = if (isSelected) {
-                                            Color.White
+                                            if (isSystemInDarkTheme()) Color.White else Color(0xFF1C1C1E)
                                         } else {
                                             Color(0xFF8E8E93)
                                         },

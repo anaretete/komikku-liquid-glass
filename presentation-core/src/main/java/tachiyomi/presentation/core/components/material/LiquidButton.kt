@@ -18,7 +18,7 @@ import com.kyant.shapes.Capsule
 fun LiquidButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop = LocalLayerBackdrop.current ?: rememberLayerBackdrop(),
+    backdrop: Backdrop? = null,
     enabled: Boolean = true,
     isInteractive: Boolean = true,
     tint: Color = Color.Unspecified,

@@ -110,23 +110,13 @@ internal fun ColorFilterPage(screenModel: ReaderSettingsScreenModel) {
         )
 
         val colorFilterMode by screenModel.preferences.colorFilterMode().collectAsState()
-        if (isGlass) {
-            CupertinoGroupedSelectionCard(
-                title = stringResource(MR.strings.pref_color_filter_mode),
-                options = ColorFilterMode.indices.toList(),
-                selected = colorFilterMode,
-                onSelect = { screenModel.preferences.colorFilterMode().set(it) },
-                labelProvider = { stringResource(ColorFilterMode.getOrNull(it)?.first ?: MR.strings.label_default) },
-            )
-        } else {
-            SettingsChipRow(MR.strings.pref_color_filter_mode) {
-                ColorFilterMode.mapIndexed { index, it ->
-                    FilterChip(
-                        selected = colorFilterMode == index,
-                        onClick = { screenModel.preferences.colorFilterMode().set(index) },
-                        label = { Text(stringResource(it.first)) },
-                    )
-                }
+        SettingsChipRow(MR.strings.pref_color_filter_mode) {
+            ColorFilterMode.mapIndexed { index, it ->
+                FilterChip(
+                    selected = colorFilterMode == index,
+                    onClick = { screenModel.preferences.colorFilterMode().set(index) },
+                    label = { Text(stringResource(it.first)) },
+                )
             }
         }
     }

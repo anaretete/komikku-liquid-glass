@@ -1,20 +1,22 @@
 package tachiyomi.presentation.core.components.material
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.coerceAtLeast
 
 /**
@@ -47,40 +49,40 @@ fun PullRefresh(
     ) {
         content()
 
-        if (isGlass) {
-            val progress = state.distanceFraction.coerceIn(0f, 1f)
-            if (refreshing || progress > 0f) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(indicatorPadding)
-                        .padding(top = (progress * 24f).coerceAtLeast(8f).dp)
-                        .size(38.dp)
-                        .liquidGlassSurface(
-                            shape = CircleShape,
-                            blurRadius = 14.dp,
-                            refractionHeight = 16.dp,
-                            refractionAmount = 24.dp,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CupertinoActivityIndicator(
-                        isSpinning = refreshing,
-                        progress = progress,
-                        radius = 11.dp,
-                    )
-                }
+        val progress = state.distanceFraction.coerceIn(0f, 1f)
+        if (refreshing || progress > 0f) {
+            val topOffset = if (refreshing) 24.dp else (progress * 24f).coerceAtLeast(8f).dp
+            val isDark = isSystemInDarkTheme()
+            val baseModifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(indicatorPadding)
+                .padding(top = topOffset)
+                .size(38.dp)
+
+            val indicatorModifier = if (isGlass) {
+                baseModifier.liquidGlassSurface(
+                    shape = CircleShape,
+                    blurRadius = 14.dp,
+                    refractionHeight = 16.dp,
+                    refractionAmount = 24.dp,
+                )
+            } else {
+                baseModifier
+                    .shadow(elevation = 2.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(if (isDark) Color(0xFF2C2C2E) else Color.White)
             }
-        } else {
-            PullToRefreshDefaults.Indicator(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(indicatorPadding),
-                isRefreshing = refreshing,
-                state = state,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+
+            Box(
+                modifier = indicatorModifier,
+                contentAlignment = Alignment.Center,
+            ) {
+                CupertinoActivityIndicator(
+                    isSpinning = refreshing,
+                    progress = progress,
+                    radius = 11.dp,
+                )
+            }
         }
     }
 }

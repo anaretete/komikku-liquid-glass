@@ -96,23 +96,47 @@ fun LiquidIconButton(
                 effects = {
                     vibrancy()
                     blur(3f.dp.toPx())
-                    lens(14f.dp.toPx(), 24f.dp.toPx(), chromaticAberration = true)
+                    try {
+                        lens(14f.dp.toPx(), 24f.dp.toPx(), chromaticAberration = true)
+                    } catch (_: Throwable) {
+                    }
                 },
                 layerBlock = if (isInteractive && enabled) {
                     {
-                        val progress = interactiveHighlight.pressProgress
-                        val scale = lerp(1f, 1f + 4f.dp.toPx() / this.size.height, progress)
+                        try {
+                            val h = this.size.height
+                            val w = this.size.width
+                            val minDim = this.size.minDimension
+                            val maxDim = this.size.maxDimension
+                            if (h <= 0.001f || w <= 0.001f || minDim <= 0.001f || maxDim <= 0.001f) {
+                                translationX = 0f
+                                translationY = 0f
+                                scaleX = 1f
+                                scaleY = 1f
+                            } else {
+                                val progress = interactiveHighlight.pressProgress
+                                val scale = lerp(1f, 1f + 4f.dp.toPx() / h, progress).takeIf { it.isFinite() } ?: 1f
 
-                        val maxOffset = this.size.minDimension
-                        val initialDerivative = 0.05f
-                        val offset = interactiveHighlight.offset
-                        translationX = maxOffset * tanh(initialDerivative * offset.x / maxOffset)
-                        translationY = maxOffset * tanh(initialDerivative * offset.y / maxOffset)
+                                val initialDerivative = 0.05f
+                                val offset = interactiveHighlight.offset
+                                val tx = minDim * tanh(initialDerivative * offset.x / minDim)
+                                val ty = minDim * tanh(initialDerivative * offset.y / minDim)
+                                translationX = tx.takeIf { it.isFinite() } ?: 0f
+                                translationY = ty.takeIf { it.isFinite() } ?: 0f
 
-                        val maxDragScale = 4f.dp.toPx() / this.size.height
-                        val offsetAngle = atan2(offset.y, offset.x)
-                        scaleX = scale + maxDragScale * abs(cos(offsetAngle) * offset.x / this.size.maxDimension)
-                        scaleY = scale + maxDragScale * abs(sin(offsetAngle) * offset.y / this.size.maxDimension)
+                                val maxDragScale = (4f.dp.toPx() / h).takeIf { it.isFinite() } ?: 0f
+                                val offsetAngle = atan2(offset.y, offset.x)
+                                val sx = scale + maxDragScale * abs(cos(offsetAngle) * offset.x / maxDim)
+                                val sy = scale + maxDragScale * abs(sin(offsetAngle) * offset.y / maxDim)
+                                scaleX = sx.takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                                scaleY = sy.takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                            }
+                        } catch (_: Throwable) {
+                            translationX = 0f
+                            translationY = 0f
+                            scaleX = 1f
+                            scaleY = 1f
+                        }
                     }
                 } else {
                     null
@@ -127,21 +151,21 @@ fun LiquidIconButton(
                     }
                 },
             )
+            .then(
+                if (isInteractive && enabled) {
+                    Modifier
+                        .then(interactiveHighlight.gestureModifier)
+                        .then(interactiveHighlight.modifier)
+                } else {
+                    Modifier
+                },
+            )
             .clickable(
                 enabled = enabled,
                 interactionSource = null,
                 indication = if (isInteractive) null else LocalIndication.current,
                 role = Role.Button,
                 onClick = onClick,
-            )
-            .then(
-                if (isInteractive && enabled) {
-                    Modifier
-                        .then(interactiveHighlight.modifier)
-                        .then(interactiveHighlight.gestureModifier)
-                } else {
-                    Modifier
-                },
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -195,32 +219,49 @@ fun LiquidButton(
                 effects = {
                     vibrancy()
                     blur(3f.dp.toPx())
-                    lens(14f.dp.toPx(), 24f.dp.toPx(), chromaticAberration = true)
+                    try {
+                        lens(14f.dp.toPx(), 24f.dp.toPx(), chromaticAberration = true)
+                    } catch (_: Throwable) {
+                    }
                 },
                 layerBlock = if (isInteractive && enabled) {
                     {
-                        val width = size.width
-                        val height = size.height
+                        try {
+                            val width = size.width
+                            val height = size.height
+                            val minDim = size.minDimension
+                            val maxDim = size.maxDimension
+                            if (height <= 0.001f || width <= 0.001f || minDim <= 0.001f || maxDim <= 0.001f) {
+                                translationX = 0f
+                                translationY = 0f
+                                scaleX = 1f
+                                scaleY = 1f
+                            } else {
+                                val progress = interactiveHighlight.pressProgress
+                                val scale = lerp(1f, 1f + 4f.dp.toPx() / height, progress).takeIf { it.isFinite() } ?: 1f
 
-                        val progress = interactiveHighlight.pressProgress
-                        val scale = lerp(1f, 1f + 4f.dp.toPx() / size.height, progress)
+                                val initialDerivative = 0.05f
+                                val offset = interactiveHighlight.offset
+                                val tx = minDim * tanh(initialDerivative * offset.x / minDim)
+                                val ty = minDim * tanh(initialDerivative * offset.y / minDim)
+                                translationX = tx.takeIf { it.isFinite() } ?: 0f
+                                translationY = ty.takeIf { it.isFinite() } ?: 0f
 
-                        val maxOffset = size.minDimension
-                        val initialDerivative = 0.05f
-                        val offset = interactiveHighlight.offset
-                        translationX = maxOffset * tanh(initialDerivative * offset.x / maxOffset)
-                        translationY = maxOffset * tanh(initialDerivative * offset.y / maxOffset)
-
-                        val maxDragScale = 4f.dp.toPx() / size.height
-                        val offsetAngle = atan2(offset.y, offset.x)
-                        scaleX =
-                            scale +
-                                    maxDragScale * abs(cos(offsetAngle) * offset.x / size.maxDimension) *
-                                    (width / height).fastCoerceAtMost(1f)
-                        scaleY =
-                            scale +
-                                    maxDragScale * abs(sin(offsetAngle) * offset.y / size.maxDimension) *
-                                    (height / width).fastCoerceAtMost(1f)
+                                val maxDragScale = (4f.dp.toPx() / height).takeIf { it.isFinite() } ?: 0f
+                                val offsetAngle = atan2(offset.y, offset.x)
+                                val aspectW = (width / height).fastCoerceAtMost(1f)
+                                val aspectH = (height / width).fastCoerceAtMost(1f)
+                                val sx = scale + maxDragScale * abs(cos(offsetAngle) * offset.x / maxDim) * aspectW
+                                val sy = scale + maxDragScale * abs(sin(offsetAngle) * offset.y / maxDim) * aspectH
+                                scaleX = sx.takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                                scaleY = sy.takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                            }
+                        } catch (_: Throwable) {
+                            translationX = 0f
+                            translationY = 0f
+                            scaleX = 1f
+                            scaleY = 1f
+                        }
                     }
                 } else {
                     null
@@ -235,21 +276,21 @@ fun LiquidButton(
                     }
                 },
             )
+            .then(
+                if (isInteractive && enabled) {
+                    Modifier
+                        .then(interactiveHighlight.gestureModifier)
+                        .then(interactiveHighlight.modifier)
+                } else {
+                    Modifier
+                },
+            )
             .clickable(
                 enabled = enabled,
                 interactionSource = null,
                 indication = if (isInteractive) null else LocalIndication.current,
                 role = Role.Button,
                 onClick = onClick,
-            )
-            .then(
-                if (isInteractive && enabled) {
-                    Modifier
-                        .then(interactiveHighlight.modifier)
-                        .then(interactiveHighlight.gestureModifier)
-                } else {
-                    Modifier
-                },
             )
             .padding(contentPadding),
         horizontalArrangement = Arrangement.spacedBy(8f.dp, Alignment.CenterHorizontally),

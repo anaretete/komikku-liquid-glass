@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.util.lerp
+import androidx.compose.material3.MaterialTheme
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberBackdrop
@@ -53,7 +54,7 @@ fun LiquidSlider(
     modifier: Modifier = Modifier,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     visibilityThreshold: Float = 0.001f,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF0088FF) else Color(0xFF0091FF),
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val isLightTheme = !isSystemInDarkTheme()
     val trackColor =
@@ -171,11 +172,14 @@ fun LiquidSlider(
                         val progress = dampedDragAnimation.pressProgress
                         if (progress > 0.001f) {
                             blur(8f.dp.toPx() * (1f - progress))
-                            lens(
-                                (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                chromaticAberration = true
-                            )
+                            try {
+                                lens(
+                                    (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
+                                    chromaticAberration = true
+                                )
+                            } catch (_: Throwable) {
+                            }
                         }
                     },
                     highlight = {
@@ -200,13 +204,18 @@ fun LiquidSlider(
                         )
                     },
                     layerBlock = {
-                        scaleX = dampedDragAnimation.scaleX
-                        scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 10f
-                        val denomX = (1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
-                        val denomY = (1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
-                        scaleX = (scaleX / denomX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
-                        scaleY = (scaleY * denomY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        try {
+                            scaleX = dampedDragAnimation.scaleX
+                            scaleY = dampedDragAnimation.scaleY
+                            val velocity = dampedDragAnimation.velocity / 10f
+                            val denomX = (1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
+                            val denomY = (1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
+                            scaleX = (scaleX / denomX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                            scaleY = (scaleY * denomY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
+                        } catch (_: Throwable) {
+                            scaleX = 1f
+                            scaleY = 1f
+                        }
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress

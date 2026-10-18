@@ -51,6 +51,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.CompositionLocalProvider
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import tachiyomi.presentation.core.components.material.CupertinoGrabber
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
@@ -89,41 +90,21 @@ fun AdaptiveSheet(
                 onDismissRequest()
             }
         }
-        val tabletExportedBackdrop = rememberLayerBackdrop()
         val tabletShape = RoundedCornerShape(24.dp)
-        val tabletModifier: Modifier = if (isGlass) {
-            Modifier
-                .requiredWidthIn(max = 460.dp)
-                .heightIn(max = 560.dp)
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClick = {},
-                )
-                .systemBarsPadding()
-                .padding(vertical = 16.dp)
-                .liquidGlassSurface(
-                    shape = tabletShape,
-                    blurRadius = 30.dp,
-                    refractionHeight = 24.dp,
-                    refractionAmount = 32.dp,
-                    tintColor = sheetBg,
-                    exportedBackdrop = tabletExportedBackdrop,
-                )
-                .then(modifier)
-        } else {
-            Modifier
-                .requiredWidthIn(max = 460.dp)
-                .heightIn(max = 560.dp)
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClick = {},
-                )
-                .systemBarsPadding()
-                .padding(vertical = 16.dp)
-                .then(modifier)
+        val tabletContentBackdrop = rememberCanvasBackdrop {
+            drawRect(sheetBg)
         }
+        val tabletModifier: Modifier = Modifier
+            .requiredWidthIn(max = 460.dp)
+            .heightIn(max = 560.dp)
+            .clickable(
+                interactionSource = null,
+                indication = null,
+                onClick = {},
+            )
+            .systemBarsPadding()
+            .padding(vertical = 16.dp)
+            .then(modifier)
 
         Box(
             modifier = Modifier
@@ -139,13 +120,13 @@ fun AdaptiveSheet(
             Surface(
                 modifier = tabletModifier,
                 shape = tabletShape,
-                color = if (isGlass) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh,
+                color = if (isGlass) sheetBg else MaterialTheme.colorScheme.surfaceContainerHigh,
                 content = {
                     BackHandler(
                         enabled = remember { derivedStateOf { alpha > 0f } }.value,
                         onBack = internalOnDismissRequest,
                     )
-                    CompositionLocalProvider(LocalLayerBackdrop provides tabletExportedBackdrop) {
+                    CompositionLocalProvider(LocalLayerBackdrop provides tabletContentBackdrop) {
                         content()
                     }
                 },
@@ -254,30 +235,21 @@ fun AdaptiveSheet(
                 .navigationBarsPadding()
                 .statusBarsPadding()
 
-            val sheetExportedBackdrop = rememberLayerBackdrop()
-            val phoneModifier: Modifier = if (isGlass) {
-                phoneBaseModifier.liquidGlassSurface(
-                    shape = bottomSheetShape,
-                    blurRadius = 30.dp,
-                    refractionHeight = 24.dp,
-                    refractionAmount = 32.dp,
-                    tintColor = sheetBg,
-                    exportedBackdrop = sheetExportedBackdrop,
-                )
-            } else {
-                phoneBaseModifier
+            val sheetContentBackdrop = rememberCanvasBackdrop {
+                drawRect(sheetBg)
             }
+            val phoneModifier: Modifier = phoneBaseModifier
 
             Surface(
                 modifier = phoneModifier,
                 shape = bottomSheetShape,
-                color = if (isGlass) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh,
+                color = if (isGlass) sheetBg else MaterialTheme.colorScheme.surfaceContainerHigh,
                 content = {
                     BackHandler(
                         enabled = anchoredDraggableState.targetValue == 0,
                         onBack = internalOnDismissRequest,
                     )
-                    CompositionLocalProvider(LocalLayerBackdrop provides sheetExportedBackdrop) {
+                    CompositionLocalProvider(LocalLayerBackdrop provides sheetContentBackdrop) {
                         if (isGlass) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,

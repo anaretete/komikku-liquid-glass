@@ -263,7 +263,7 @@ internal class PermissionStep : OnboardingStep {
                     } else {
                         LiquidButton(
                             onClick = onButtonClick,
-                            tint = Color(0xFF007AFF),
+                            tint = MaterialTheme.colorScheme.primary,
                             shape = Capsule(),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                         ) {

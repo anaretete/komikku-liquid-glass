@@ -94,7 +94,7 @@ fun InfoScreen(
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         enabled = canAccept,
                         onClick = onAcceptClick,
-                        tint = Color(0xFF007AFF),
+                        tint = MaterialTheme.colorScheme.primary,
                         shape = Capsule(),
                     ) {
                         Text(
@@ -162,7 +162,7 @@ fun InfoScreen(
                         .padding(bottom = MaterialTheme.padding.medium)
                         .size(64.dp)
                         .clip(RoundedRectangle(16.dp, RoundedCornerStyle.Continuous))
-                        .background(Color(0xFF007AFF)),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(

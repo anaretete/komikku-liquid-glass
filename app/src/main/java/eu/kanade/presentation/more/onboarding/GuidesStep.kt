@@ -41,7 +41,7 @@ internal class GuidesStep(
                 com.kyant.backdrop.catalog.components.LiquidButton(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     onClick = { handler.openUri(GETTING_STARTED_URL) },
-                    tint = androidx.compose.ui.graphics.Color(0xFF007AFF),
+                    tint = MaterialTheme.colorScheme.primary,
                     shape = com.kyant.shapes.Capsule(),
                 ) {
                     Text(
@@ -70,7 +70,7 @@ internal class GuidesStep(
                 com.kyant.backdrop.catalog.components.LiquidButton(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     onClick = onRestoreBackup,
-                    tint = androidx.compose.ui.graphics.Color(0xFF007AFF),
+                    tint = MaterialTheme.colorScheme.primary,
                     shape = com.kyant.shapes.Capsule(),
                 ) {
                     Text(
