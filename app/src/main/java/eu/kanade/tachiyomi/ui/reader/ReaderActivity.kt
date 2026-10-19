@@ -45,6 +45,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -339,33 +341,34 @@ class ReaderActivity : BaseActivity() {
             }
 
             val isDark = isSystemInDarkTheme()
-            val readerBackdrop = rememberCanvasBackdrop {
-                val baseColor = if (isDark) ComposeColor(0xFF16161A).copy(alpha = 0.92f) else ComposeColor(0xFFF2F2F6).copy(alpha = 0.94f)
-                drawRect(baseColor)
-            }
+            val readerPageBackdrop = rememberLayerBackdrop()
 
-            // 1. Content overlay (brightness, color tint filters, flash)
-            Box(modifier = Modifier.fillMaxSize()) {
+            // 1. Manga Page Canvas Layer & Content overlay (Sibling 1)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(readerPageBackdrop),
+            ) {
                 ContentOverlay(state = state)
             }
 
-            // 2. Foreground overlay consuming safe readerBackdrop
-            Box(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                if (!state.menuVisible && showPageNumber) {
-                    ReaderPageIndicator(
-                        // SY -->
-                        currentPage = state.currentPageText,
-                        // SY <--
-                        totalPages = state.totalPages,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .navigationBarsPadding(),
-                    )
-                }
+            // 2. Floating Liquid Glass HUD Layer (Sibling 2)
+            CompositionLocalProvider(LocalLayerBackdrop provides readerPageBackdrop) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (!state.menuVisible && showPageNumber) {
+                        ReaderPageIndicator(
+                            // SY -->
+                            currentPage = state.currentPageText,
+                            // SY <--
+                            totalPages = state.totalPages,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .navigationBarsPadding(),
+                        )
+                    }
 
-                CompositionLocalProvider(LocalLayerBackdrop provides readerBackdrop) {
                     AppBars(state = state)
                 }
             }
@@ -383,7 +386,7 @@ class ReaderActivity : BaseActivity() {
             // KMK <--
 
             val onDismissRequest = viewModel::closeDialog
-            CompositionLocalProvider(LocalLayerBackdrop provides readerBackdrop) {
+            CompositionLocalProvider(LocalLayerBackdrop provides readerPageBackdrop) {
                 when (state.dialog) {
                 is ReaderViewModel.Dialog.Loading -> {
                     AlertDialog(

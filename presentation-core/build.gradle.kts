@@ -50,6 +50,6 @@ dependencies {
     implementation(kotlinx.immutables)
 
     api(libs.kyant.shapes)
-    implementation(libs.kyant.backdrop)
+    api(libs.kyant.backdrop)
     implementation(libs.chrisbanes.haze)
 }

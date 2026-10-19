@@ -31,6 +31,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.kyant.shapes.Capsule
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
+import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
@@ -253,18 +261,25 @@ fun ReaderAppBars(
                         // SY <--
                     )
                 }
+                val bottomDockBackdrop = rememberLayerBackdrop()
+                val effectiveReaderBackdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+                    drawRect(if (isSystemInDarkTheme()) Color(0xFF141416) else Color(0xFFF2F2F6))
+                }
                 val bottomBarModifier = if (isGlass) {
                     Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                        .height(56.dp)
-                        .clip(Capsule())
-                        .background(if (isSystemInDarkTheme()) Color(0xCC1C1C1E) else Color(0xCCFFFFFF))
-                        .border(
-                            0.5.dp,
-                            if (isSystemInDarkTheme()) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                            Capsule(),
+                        .navigationBarsPadding()
+                        .padding(horizontal = 32.dp, vertical = 12.dp)
+                        .height(58.dp)
+                        .drawBackdrop(
+                            backdrop = effectiveReaderBackdrop,
+                            shape = { Capsule() },
+                            exportedBackdrop = bottomDockBackdrop,
+                            effects = {
+                                vibrancy()
+                                blur(20.dp.toPx())
+                                lens(18.dp.toPx(), 32.dp.toPx(), depthEffect = true, chromaticAberration = true)
+                            },
+                            onDrawSurface = { drawRect(Color(0xFF141416).copy(alpha = 0.58f)) },
                         )
                 } else {
                     Modifier

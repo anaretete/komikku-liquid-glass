@@ -15,8 +15,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import tachiyomi.presentation.core.components.material.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import tachiyomi.presentation.core.components.material.CupertinoCheckmark
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.Text
 import tachiyomi.presentation.core.components.material.TextButton
 import androidx.compose.runtime.Composable
@@ -304,16 +306,20 @@ fun <T> RadioSelectorSearchable(
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         optionStrings.forEachIndexed { index, option ->
+            val isSelected = selected == index
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
-                    .clickable { onSelectOption(index) },
+                    .height(46.dp)
+                    .clickable { onSelectOption(index) }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                RadioButton(selected == index, onClick = null)
-                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
-                Text(option, maxLines = 1)
+                Text(option, maxLines = 1, modifier = Modifier.weight(1f))
+                if (isSelected) {
+                    CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                }
             }
         }
     }
@@ -338,19 +344,25 @@ fun RadioSelectorSearchable(
             onChangeSearchQuery = onChangeSearchQuery ?: {},
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = MaterialTheme.padding.small),
+                .padding(bottom = 8.dp),
         ).takeIf { onChangeSearchQuery != null }
         options.forEachIndexed { index, option ->
+            val isSelected = selected == index
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
-                    .clickable { onSelectOption(index) },
+                    .height(46.dp)
+                    .clickable { onSelectOption(index) }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                RadioButton(selected == index, onClick = null)
-                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
-                option()
+                Box(modifier = Modifier.weight(1f)) {
+                    option()
+                }
+                if (isSelected) {
+                    CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                }
             }
         }
     }

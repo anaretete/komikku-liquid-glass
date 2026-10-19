@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -175,31 +174,39 @@ fun <T> ListPreferenceWidget(
     }
 }
 
+import tachiyomi.presentation.core.components.material.CupertinoCheckmark
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.text.font.FontWeight
+
 @Composable
 private fun DialogRow(
     label: String,
     isSelected: Boolean,
     onSelected: () -> Unit,
 ) {
+    val isDark = isSystemInDarkTheme()
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .selectable(
-                selected = isSelected,
-                onClick = { if (!isSelected) onSelected() },
-            )
             .fillMaxWidth()
-            .minimumInteractiveComponentSize(),
+            .height(46.dp)
+            .clickable { if (!isSelected) onSelected() }
+            .padding(horizontal = 16.dp),
     ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = null,
-        )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge.merge(),
-            modifier = Modifier.padding(start = 24.dp),
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 16.sp,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isDark) Color.White else Color.Black,
+            ),
+            modifier = Modifier.weight(1f),
         )
+        if (isSelected) {
+            CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+        }
     }
 }

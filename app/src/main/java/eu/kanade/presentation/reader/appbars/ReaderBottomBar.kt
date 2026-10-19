@@ -47,12 +47,47 @@ fun ReaderBottomBar(
     onClickShare: (() -> Unit)?,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
+
+@Composable
+fun ReaderBottomBar(
+    // SY -->
+    enabledButtons: ImmutableSet<String>,
+    // SY <--
+    readingMode: ReadingMode,
+    onClickReadingMode: () -> Unit,
+    orientation: ReaderOrientation,
+    onClickOrientation: () -> Unit,
+    cropEnabled: Boolean,
+    onClickCropBorder: () -> Unit,
+    onClickSettings: () -> Unit,
+    // SY -->
+    currentReadingMode: ReadingMode,
+    dualPageSplitEnabled: Boolean,
+    doublePages: Boolean,
+    onClickChapterList: () -> Unit,
+    onClickWebView: (() -> Unit)?,
+    onClickBrowser: (() -> Unit)?,
+    onClickShare: (() -> Unit)?,
+    onClickPageLayout: () -> Unit,
+    onClickShiftPage: () -> Unit,
     // SY <--
     modifier: Modifier = Modifier,
 ) {
-    // KMK -->
-    val iconColor = MaterialTheme.colorScheme.primary
-    // KMK <--
+    val isGlass = LocalLiquidGlassConfig.current.enabled
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -60,75 +95,61 @@ fun ReaderBottomBar(
     ) {
         // SY -->
         if (ReaderBottomButton.ViewChapters.isIn(enabledButtons)) {
-            IconButton(onClick = onClickChapterList) {
-                Icon(
-                    imageVector = Icons.Outlined.FormatListNumbered,
-                    contentDescription = stringResource(MR.strings.chapters),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickChapterList,
+                contentDescription = stringResource(MR.strings.chapters),
+                icon = Icons.Outlined.FormatListNumbered,
+                isGlass = isGlass,
+            )
         }
 
         if (ReaderBottomButton.WebView.isIn(enabledButtons) && onClickWebView != null) {
-            IconButton(onClick = onClickWebView) {
-                Icon(
-                    imageVector = Icons.Outlined.Public,
-                    contentDescription = stringResource(MR.strings.action_open_in_web_view),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickWebView,
+                contentDescription = stringResource(MR.strings.action_open_in_web_view),
+                icon = Icons.Outlined.Public,
+                isGlass = isGlass,
+            )
         }
 
         if (ReaderBottomButton.Browser.isIn(enabledButtons) && onClickBrowser != null) {
-            IconButton(onClick = onClickBrowser) {
-                Icon(
-                    imageVector = Icons.Outlined.Explore,
-                    contentDescription = stringResource(MR.strings.action_open_in_browser),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickBrowser,
+                contentDescription = stringResource(MR.strings.action_open_in_browser),
+                icon = Icons.Outlined.Explore,
+                isGlass = isGlass,
+            )
         }
 
         if (ReaderBottomButton.Share.isIn(enabledButtons) && onClickShare != null) {
-            IconButton(onClick = onClickShare) {
-                Icon(
-                    imageVector = Icons.Outlined.Share,
-                    contentDescription = stringResource(MR.strings.action_share),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickShare,
+                contentDescription = stringResource(MR.strings.action_share),
+                icon = Icons.Outlined.Share,
+                isGlass = isGlass,
+            )
         }
 
         if (ReaderBottomButton.ReadingMode.isIn(enabledButtons)) {
-            IconButton(onClick = onClickReadingMode) {
-                Icon(
-                    painter = painterResource(readingMode.iconRes),
-                    contentDescription = stringResource(MR.strings.viewer),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickReadingMode,
+                contentDescription = stringResource(MR.strings.viewer),
+                icon = painterResource(readingMode.iconRes),
+                isActive = readingMode != ReadingMode.DEFAULT,
+                activeColor = Color(0xFF0A84FF),
+                isGlass = isGlass,
+            )
         }
 
         if (ReaderBottomButton.Rotation.isIn(enabledButtons)) {
-            IconButton(onClick = onClickOrientation) {
-                Icon(
-                    imageVector = orientation.icon,
-                    contentDescription = stringResource(MR.strings.pref_rotation_type),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickOrientation,
+                contentDescription = stringResource(MR.strings.pref_rotation_type),
+                icon = orientation.icon,
+                isActive = orientation != ReaderOrientation.DEFAULT,
+                activeColor = Color(0xFFFF9F0A),
+                isGlass = isGlass,
+            )
         }
 
         val cropBorders = when (currentReadingMode) {
@@ -137,17 +158,16 @@ fun ReaderBottomBar(
             else -> ReaderBottomButton.CropBordersPager
         }
         if (cropBorders.isIn(enabledButtons)) {
-            IconButton(onClick = onClickCropBorder) {
-                Icon(
-                    painter = painterResource(
-                        if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp,
-                    ),
-                    contentDescription = stringResource(MR.strings.pref_crop_borders),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickCropBorder,
+                contentDescription = stringResource(MR.strings.pref_crop_borders),
+                icon = painterResource(
+                    if (cropEnabled) R.drawable.ic_crop_24dp else R.drawable.ic_crop_off_24dp,
+                ),
+                isActive = cropEnabled,
+                activeColor = Color(0xFF0A84FF),
+                isGlass = isGlass,
+            )
         }
 
         if (
@@ -155,38 +175,88 @@ fun ReaderBottomBar(
             ReaderBottomButton.PageLayout.isIn(enabledButtons) &&
             ReadingMode.isPagerType(currentReadingMode.flagValue)
         ) {
-            IconButton(onClick = onClickPageLayout) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_book_open_variant_24dp),
-                    contentDescription = stringResource(SYMR.strings.page_layout),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
-                )
-            }
+            ReaderBottomBarItem(
+                onClick = onClickPageLayout,
+                contentDescription = stringResource(SYMR.strings.page_layout),
+                icon = painterResource(R.drawable.ic_book_open_variant_24dp),
+                isGlass = isGlass,
+            )
         }
 
         if (doublePages) {
-            IconButton(onClick = onClickShiftPage) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_page_next_outline_24dp),
-                    contentDescription = stringResource(SYMR.strings.shift_double_pages),
-                    // KMK -->
-                    tint = iconColor,
-                    // KMK <--
+            ReaderBottomBarItem(
+                onClick = onClickShiftPage,
+                contentDescription = stringResource(SYMR.strings.shift_double_pages),
+                icon = painterResource(R.drawable.ic_page_next_outline_24dp),
+                isActive = true,
+                activeColor = Color(0xFF0A84FF),
+                isGlass = isGlass,
+            )
+        }
+
+        ReaderBottomBarItem(
+            onClick = onClickSettings,
+            contentDescription = stringResource(MR.strings.action_settings),
+            icon = Icons.Outlined.Settings,
+            isGlass = isGlass,
+        )
+        // SY <--
+    }
+}
+
+@Composable
+private fun ReaderBottomBarItem(
+    onClick: () -> Unit,
+    contentDescription: String?,
+    icon: Any,
+    modifier: Modifier = Modifier,
+    isActive: Boolean = false,
+    activeColor: Color = Color(0xFF0A84FF),
+    isGlass: Boolean = true,
+) {
+    if (isGlass) {
+        val tint = if (isActive) activeColor else Color.White
+        Box(
+            modifier = modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(bounded = true, radius = 21.dp),
+                    onClick = onClick,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            when (icon) {
+                is ImageVector -> Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    tint = tint,
+                    modifier = Modifier.size(22.dp),
+                )
+                is Painter -> Icon(
+                    painter = icon,
+                    contentDescription = contentDescription,
+                    tint = tint,
+                    modifier = Modifier.size(22.dp),
                 )
             }
         }
-
-        IconButton(onClick = onClickSettings) {
-            Icon(
-                imageVector = Icons.Outlined.Settings,
-                contentDescription = stringResource(MR.strings.action_settings),
-                // KMK -->
-                tint = iconColor,
-                // KMK <--
-            )
+    } else {
+        IconButton(onClick = onClick, modifier = modifier) {
+            val tint = if (isActive) activeColor else MaterialTheme.colorScheme.primary
+            when (icon) {
+                is ImageVector -> Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    tint = tint,
+                )
+                is Painter -> Icon(
+                    painter = icon,
+                    contentDescription = contentDescription,
+                    tint = tint,
+                )
+            }
         }
-        // SY <--
     }
 }

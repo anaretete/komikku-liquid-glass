@@ -50,6 +50,9 @@ private suspend inline fun AwaitPointerEventScope.drag(
     var pointer = pointerId
     while (true) {
         val change = awaitDragOrUp(pointer) ?: return null
+        if (change.isConsumed) {
+            return null
+        }
         if (change.changedToUpIgnoreConsumed()) {
             return change
         }

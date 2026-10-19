@@ -33,7 +33,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
@@ -190,20 +189,13 @@ fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
 
 @Composable
 fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
-    val isGlass = LocalLiquidGlassConfig.current.enabled
     BaseSettingsItem(
         label = label,
         widget = {
-            if (isGlass) {
-                CupertinoCheckmark(
-                    checked = selected,
-                )
-            } else {
-                RadioButton(
-                    selected = selected,
-                    onClick = null,
-                )
-            }
+            CupertinoCheckmark(
+                checked = selected,
+                tint = MaterialTheme.colorScheme.primary,
+            )
         },
         onClick = onClick,
     )
@@ -283,10 +275,10 @@ fun BaseSliderItem(
                     )
                 }
             }
-            Pill(
+            Text(
                 text = if (localPosition.roundToInt() == value) valueString else "${localPosition.roundToInt()}%",
-                style = MaterialTheme.typography.bodyMedium,
-                color = pillColor,
+                fontSize = 15.sp,
+                color = Color(0xFF8E8E93),
             )
         }
         Slider(

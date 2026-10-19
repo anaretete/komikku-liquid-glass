@@ -543,75 +543,7 @@ private fun MangaScreenSmallImpl(
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            CompositionLocalProvider(LocalLayerBackdrop provides mangaCoverBackdrop) {
-                val isGlass = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current.enabled
-                val hasUnread = remember(chapters) {
-                    chapters.fastAny { !it.chapter.read }
-                }
-                val isFABVisible = if (isGlass) {
-                    hasUnread && !isAnySelected && chapterListState.firstVisibleItemIndex > 1
-                } else {
-                    hasUnread && !isAnySelected
-                }
-                SmallExtendedFloatingActionButton(
-                text = {
-                    val isReading = remember(state.chapters) {
-                        state.chapters.fastAny { it.chapter.read }
-                    }
-                    Text(
-                        text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
-                    )
-                },
-                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                onClick = onContinueReading,
-                expanded = chapterListState.shouldExpandFAB(),
-                modifier = Modifier.animateFloatingActionButton(
-                    visible = isFABVisible,
-                    alignment = Alignment.BottomEnd,
-                )
-                    .then(
-                        if (isGlass) {
-                            Modifier.liquidGlassSurface(
-                                shape = androidx.compose.foundation.shape.CircleShape,
-                                blurRadius = 14.dp,
-                                refractionHeight = 18.dp,
-                                refractionAmount = 28.dp,
-                                tintColor = MaterialTheme.colorScheme.primary,
-                            )
-                        } else {
-                            Modifier
-                        },
-                    )
-                    // KMK -->
-                    .offset { IntOffset(offsetX.roundToInt(), 0) }
-                    .onGloballyPositioned { coordinates ->
-                        fabSize = coordinates.size
-                        positionOnScreen = coordinates.positionOnScreen()
-                    }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
-                                    readButtonPosition.set(FabPosition.End.toString())
-                                } else {
-                                    readButtonPosition.set(FabPosition.Start.toString())
-                                }
-                                offsetX = 0f
-                            },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            val newOffsetX = offsetX + dragAmount
-                            if (!newOffsetX.isNaN()) {
-                                offsetX = newOffsetX
-                            }
-                        }
-                    },
-                containerColor = MaterialTheme.colorScheme.primary,
-                // KMK <--
-            )
-            }
-        },
+        floatingActionButton = {},
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
             FabPosition.End
@@ -710,66 +642,50 @@ private fun MangaScreenSmallImpl(
                             val isReading = remember(state.chapters) {
                                 state.chapters.fastAny { it.chapter.read }
                             }
-                            val isGlass = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current.enabled
                             val buttonText = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start)
-                            if (isGlass) {
-                                LiquidButton(
-                                    onClick = onContinueReading,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                                        .height(48.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    contentColor = Color.White,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.PlayArrow,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = buttonText,
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            fontSize = 15.sp,
-                                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                            letterSpacing = (-0.2f).sp,
-                                            color = Color.White,
-                                        ),
-                                    )
-                                }
-                            } else {
-                                tachiyomi.presentation.core.components.material.Button(
-                                    onClick = onContinueReading,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                                        .height(48.dp),
-                                    shape = androidx.compose.foundation.shape.CircleShape,
-                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = Color.White,
+                            val resumeInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                            val resumePressed by resumeInteraction.collectIsPressedAsState()
+                            val resumeScale by androidx.compose.animation.core.animateFloatAsState(
+                                targetValue = if (resumePressed) 0.96f else 1f,
+                                animationSpec = androidx.compose.animation.core.spring(dampingRatio = 0.75f, stiffness = androidx.compose.animation.core.Spring.StiffnessMedium),
+                                label = "resumePressScale",
+                            )
+                            androidx.compose.foundation.layout.Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                                    .height(50.dp)
+                                    .graphicsLayer {
+                                        scaleX = resumeScale
+                                        scaleY = resumeScale
+                                    }
+                                    .clip(com.kyant.shapes.Capsule())
+                                    .background(Color(0xFF0A84FF))
+                                    .clickable(
+                                        interactionSource = resumeInteraction,
+                                        indication = null,
+                                        onClick = onContinueReading,
                                     ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.PlayArrow,
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(22.dp),
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = buttonText,
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            fontSize = 15.sp,
-                                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                            letterSpacing = (-0.2f).sp,
-                                            color = Color.White,
-                                        ),
+                                        fontSize = 17.sp,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                        letterSpacing = (-0.2).sp,
+                                        color = Color.White,
                                     )
-                                }
-                            }
                         }
                     }
 
@@ -1099,70 +1015,7 @@ private fun MangaScreenLargeImpl(
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            val isGlass = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current.enabled
-            val isFABVisible = remember(chapters) {
-                chapters.fastAny { !it.chapter.read } && !isAnySelected
-            }
-            SmallExtendedFloatingActionButton(
-                text = {
-                    val isReading = remember(state.chapters) {
-                        state.chapters.fastAny { it.chapter.read }
-                    }
-                    Text(
-                        text = stringResource(
-                            if (isReading) MR.strings.action_resume else MR.strings.action_start,
-                        ),
-                    )
-                },
-                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                onClick = onContinueReading,
-                expanded = chapterListState.shouldExpandFAB(),
-                modifier = Modifier.animateFloatingActionButton(
-                    visible = isFABVisible,
-                    alignment = Alignment.BottomEnd,
-                )
-                    .then(
-                        if (isGlass) {
-                            Modifier.liquidGlassSurface(
-                                shape = androidx.compose.foundation.shape.CircleShape,
-                                blurRadius = 14.dp,
-                                refractionHeight = 18.dp,
-                                refractionAmount = 28.dp,
-                                tintColor = MaterialTheme.colorScheme.primary,
-                            )
-                        } else {
-                            Modifier
-                        },
-                    )
-                    // KMK -->
-                    .offset { IntOffset(offsetX.roundToInt(), 0) }
-                    .onGloballyPositioned { coordinates ->
-                        fabSize = coordinates.size
-                        positionOnScreen = coordinates.positionOnScreen()
-                    }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
-                                    readButtonPosition.set(FabPosition.End.toString())
-                                } else {
-                                    readButtonPosition.set(FabPosition.Start.toString())
-                                }
-                                offsetX = 0f
-                            },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            val newOffsetX = offsetX + dragAmount
-                            if (!newOffsetX.isNaN()) {
-                                offsetX = newOffsetX
-                            }
-                        }
-                    },
-                containerColor = MaterialTheme.colorScheme.primary,
-                // KMK <--
-            )
-        },
+        floatingActionButton = {},
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
             FabPosition.End

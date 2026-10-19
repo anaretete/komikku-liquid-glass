@@ -662,3 +662,241 @@ val CupertinoMoreHoriz: ImageVector
 
 private var _moreHoriz: ImageVector? = null
 
+/**
+ * Authentic Apple iOS 26 Inset Grouped Section Container
+ */
+@Composable
+fun CupertinoInsetGroup(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val isDark = isSystemInDarkTheme()
+    val cardBg = if (isDark) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        if (!title.isNullOrEmpty()) {
+            Text(
+                text = title.uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isDark) Color(0xFF8E8E93) else Color(0xFF6C6C70),
+                ),
+                modifier = Modifier.padding(start = 12.dp, bottom = 6.dp),
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedRectangle(18.dp, RoundedCornerStyle.Continuous))
+                .background(cardBg),
+            content = content,
+        )
+    }
+}
+
+/**
+ * Authentic Apple iOS 26 Picker Row for Inset Grouped Table Cards.
+ * Opens an authentic CupertinoAlertDialog with right-aligned checkmarks when tapped.
+ */
+@Composable
+fun <T> CupertinoPickerRow(
+    title: String,
+    selectedValueTitle: String,
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    optionLabelProvider: @Composable (T) -> String,
+    modifier: Modifier = Modifier,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val isDark = isSystemInDarkTheme()
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clickable { showDialog = true }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 16.sp,
+                color = if (isDark) Color.White else Color(0xFF1C1C1E),
+            ),
+            modifier = Modifier.weight(1f),
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = selectedValueTitle,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 15.sp,
+                    color = Color(0xFF8E8E93),
+                ),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = "›",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 18.sp,
+                    color = Color(0xFF5A5A5E),
+                ),
+            )
+        }
+    }
+
+    if (showDialog) {
+        CupertinoOptionsDialog(
+            title = title,
+            options = options,
+            selectedOption = selectedOption,
+            onSelect = {
+                onOptionSelected(it)
+                showDialog = false
+            },
+            onDismiss = { showDialog = false },
+            optionLabelProvider = optionLabelProvider,
+        )
+    }
+}
+
+/**
+ * Clean iOS Options Dialog modal with checkmarks.
+ */
+@Composable
+fun <T> CupertinoOptionsDialog(
+    title: String,
+    options: List<T>,
+    selectedOption: T,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+    optionLabelProvider: @Composable (T) -> String,
+) {
+    val isDark = isSystemInDarkTheme()
+    CupertinoAlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isDark) Color.White else Color.Black,
+                ),
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .androidx.compose.foundation.verticalScroll(androidx.compose.foundation.rememberScrollState()),
+            ) {
+                options.forEachIndexed { index, option ->
+                    val isSelected = option == selectedOption
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp)
+                            .clickable { onSelect(option) }
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = optionLabelProvider(option),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 16.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (isDark) Color.White else Color.Black,
+                            ),
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (isSelected) {
+                            CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                        }
+                    }
+                    if (index < options.lastIndex) {
+                        HorizontalDivider(
+                            thickness = 0.5.dp,
+                            color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.12f),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(onClick = onDismiss),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = tachiyomi.presentation.core.i18n.stringResource(tachiyomi.i18n.MR.strings.action_cancel),
+                    color = Color(0xFF0A84FF),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 17.sp,
+                )
+            }
+        },
+    )
+}
+
+/**
+ * Authentic Apple iOS 26 Switch Row for Inset Grouped Table Cards.
+ */
+@Composable
+fun CupertinoSwitchRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    subtitle: String? = null,
+) {
+    val isDark = isSystemInDarkTheme()
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 16.sp,
+                    color = if (isDark) Color.White else Color(0xFF1C1C1E),
+                ),
+            )
+            if (!subtitle.isNullOrEmpty()) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        color = Color(0xFF8E8E93),
+                    ),
+                )
+            }
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+        )
+    }
+}
+
+

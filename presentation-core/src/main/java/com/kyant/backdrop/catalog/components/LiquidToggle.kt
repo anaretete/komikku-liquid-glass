@@ -44,21 +44,17 @@ import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
 
-import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
-import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
-
 @Composable
 fun LiquidToggle(
     selected: () -> Boolean,
     onSelect: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    backdrop: Backdrop? = null,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF34C759) else Color(0xFF30D158),
+    backdrop: Backdrop,
+    modifier: Modifier = Modifier
 ) {
     val isLightTheme = !isSystemInDarkTheme()
-    val activeBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
-        drawRect(if (isLightTheme) Color(0xFFF2F2F7) else Color(0xFF1C1C1E))
-    }
+    val accentColor =
+        if (isLightTheme) Color(0xFF34C759)
+        else Color(0xFF30D158)
     val trackColor =
         if (isLightTheme) Color(0xFF787878).copy(0.2f)
         else Color(0xFF787880).copy(0.36f)
@@ -148,11 +144,11 @@ fun LiquidToggle(
                 .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(
-                        activeBackdrop,
+                        backdrop,
                         rememberBackdrop(trackBackdrop) { drawBackdrop ->
                             val progress = dampedDragAnimation.pressProgress
                             val scaleX = lerp(2f / 3f, 0.75f, progress)
-                            val scaleY = lerp(0.001f, 0.75f, progress).coerceAtLeast(0.001f)
+                            val scaleY = lerp(0f, 0.75f, progress)
                             scale(scaleX, scaleY) {
                                 drawBackdrop()
                             }
@@ -162,14 +158,11 @@ fun LiquidToggle(
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
                         blur(8f.dp.toPx() * (1f - progress))
-                        try {
-                            lens(
-                                5f.dp.toPx() * progress,
-                                10f.dp.toPx() * progress,
-                                chromaticAberration = true
-                            )
-                        } catch (_: Throwable) {
-                        }
+                        lens(
+                            5f.dp.toPx() * progress,
+                            10f.dp.toPx() * progress,
+                            chromaticAberration = true
+                        )
                     },
                     highlight = {
                         val progress = dampedDragAnimation.pressProgress
@@ -193,16 +186,11 @@ fun LiquidToggle(
                         )
                     },
                     layerBlock = {
-                        try {
-                            val velocity = dampedDragAnimation.velocity / 50f
-                            val denomX = (1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
-                            val factorY = (1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)).coerceAtLeast(0.01f)
-                            scaleX = (dampedDragAnimation.scaleX / denomX).takeIf { it.isFinite() && it > 0.001f } ?: 1f
-                            scaleY = (dampedDragAnimation.scaleY * factorY).takeIf { it.isFinite() && it > 0.001f } ?: 1f
-                        } catch (_: Throwable) {
-                            scaleX = 1f
-                            scaleY = 1f
-                        }
+                        scaleX = dampedDragAnimation.scaleX
+                        scaleY = dampedDragAnimation.scaleY
+                        val velocity = dampedDragAnimation.velocity / 50f
+                        scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
+                        scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress

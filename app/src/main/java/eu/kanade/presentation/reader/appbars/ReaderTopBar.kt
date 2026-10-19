@@ -46,6 +46,13 @@ import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 import tachiyomi.presentation.core.components.material.liquidGlassSurface
 import tachiyomi.presentation.core.i18n.stringResource
 
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
+import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
+
 @Composable
 fun ReaderTopBar(
     mangaTitle: String?,
@@ -65,60 +72,57 @@ fun ReaderTopBar(
     if (isGlass) {
         var showOverflow by remember { mutableStateOf(false) }
         val hasOverflow = onOpenInWebView != null || onOpenInBrowser != null || onShare != null
+        val effectiveBackdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+            drawRect(if (isDark) Color(0xFF141416) else Color(0xFFF2F2F6))
+        }
 
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // Detached Circular Frosted Glass Back Button (42dp)
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                    .border(
-                        0.5.dp,
-                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                        CircleShape,
-                    )
-                    .clickable(onClick = navigateUp),
-                contentAlignment = Alignment.Center,
+            // Standalone 44dp Circular Liquid Glass Back Button
+            LiquidIconButton(
+                onClick = navigateUp,
+                size = 44.dp,
+                backdrop = effectiveBackdrop,
+                surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
                     contentDescription = stringResource(MR.strings.action_bar_up_description),
-                    tint = if (isDark) Color.White else Color.Black,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp),
                 )
             }
 
-            // Compact Centered Glass Pill for Title/Chapter (floating glass capsule)
+            // Compact Centered Floating Liquid Glass Capsule Pill for Title / Subtitle
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 8.dp),
+                    .weight(1f, fill = false)
+                    .padding(horizontal = 12.dp)
+                    .drawBackdrop(
+                        backdrop = effectiveBackdrop,
+                        shape = { Capsule() },
+                        effects = {
+                            vibrancy()
+                            blur(18.dp.toPx())
+                            lens(16.dp.toPx(), 28.dp.toPx(), depthEffect = true, chromaticAberration = true)
+                        },
+                        onDrawSurface = { drawRect(Color(0xFF141416).copy(alpha = 0.55f)) },
+                    )
+                    .padding(horizontal = 16.dp, vertical = 7.dp)
+                    .then(if (onClickTopAppBar != null) Modifier.clickable(onClick = onClickTopAppBar) else Modifier),
                 contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    modifier = Modifier
-                        .clip(Capsule())
-                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                        .border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                            Capsule(),
-                        )
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                        .then(if (onClickTopAppBar != null) Modifier.clickable(onClick = onClickTopAppBar) else Modifier),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     if (!mangaTitle.isNullOrEmpty()) {
                         Text(
                             text = mangaTitle,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = if (isDark) Color.White else Color.Black,
+                                fontSize = 15.sp,
+                                color = Color.White,
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -128,8 +132,8 @@ fun ReaderTopBar(
                         Text(
                             text = chapterTitle,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 11.sp,
-                                color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.7f),
+                                fontSize = 12.sp,
+                                color = Color(0xFFEBEBF5),
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -138,52 +142,40 @@ fun ReaderTopBar(
                 }
             }
 
-            // Right Actions: Detached Circular Frosted Glass Bookmark & Overflow (42dp)
+            // Right Actions: Standalone 44dp Circular Liquid Glass Bookmark & Overflow
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                        .border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                            CircleShape,
-                        )
-                        .clickable(onClick = onToggleBookmarked),
-                    contentAlignment = Alignment.Center,
+                LiquidIconButton(
+                    onClick = onToggleBookmarked,
+                    size = 44.dp,
+                    backdrop = effectiveBackdrop,
+                    surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
                 ) {
                     Icon(
                         imageVector = if (bookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
                         contentDescription = stringResource(
                             if (bookmarked) MR.strings.action_remove_bookmark else MR.strings.action_bookmark,
                         ),
-                        tint = if (bookmarked) Color(0xFFFF9F0A) else (if (isDark) Color.White else Color.Black),
+                        tint = if (bookmarked) Color(0xFFFF9F0A) else Color.White,
+                        modifier = Modifier.size(22.dp),
                     )
                 }
 
                 if (hasOverflow) {
                     Box {
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                                .border(
-                                    0.5.dp,
-                                    if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                                    CircleShape,
-                                )
-                                .clickable(onClick = { showOverflow = true }),
-                            contentAlignment = Alignment.Center,
+                        LiquidIconButton(
+                            onClick = { showOverflow = true },
+                            size = 44.dp,
+                            backdrop = effectiveBackdrop,
+                            surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.MoreHoriz,
                                 contentDescription = stringResource(MR.strings.label_more),
-                                tint = if (isDark) Color.White else Color.Black,
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp),
                             )
                         }
 

@@ -7,8 +7,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowRight
-import androidx.compose.material.icons.outlined.RadioButtonChecked
-import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -75,32 +74,16 @@ fun RadioMenuItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val isGlass = LocalLiquidGlassConfig.current.enabled
     DropdownMenuItem(
         text = text,
         onClick = onClick,
         trailingIcon = {
-            if (isGlass) {
-                if (isChecked) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = stringResource(MR.strings.selected),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            } else {
-                if (isChecked) {
-                    Icon(
-                        imageVector = Icons.Outlined.RadioButtonChecked,
-                        contentDescription = stringResource(MR.strings.selected),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.RadioButtonUnchecked,
-                        contentDescription = stringResource(MR.strings.not_selected),
-                    )
-                }
+            if (isChecked) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = stringResource(MR.strings.selected),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
         },
         modifier = modifier,

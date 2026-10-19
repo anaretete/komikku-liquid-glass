@@ -259,31 +259,21 @@ fun Slider(
         SliderDefaults.Track(colors = colors, enabled = enabled, sliderState = sliderState)
     },
 ) {
-    val isGlass = LocalLiquidGlassConfig.current.enabled
-    if (isGlass && backdrop != null) {
-        CupertinoSlider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier,
-            enabled = enabled,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished,
-            backdrop = backdrop,
-            accentColor = accentColor ?: MaterialTheme.colorScheme.primary,
-        )
-    } else {
-        SolidCupertinoSlider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier,
-            enabled = enabled,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished,
-            accentColor = accentColor ?: MaterialTheme.colorScheme.primary,
-        )
+    val isDark = isSystemInDarkTheme()
+    val effectiveBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+        drawRect(if (isDark) Color(0xFF16161A) else Color(0xFFF2F2F6))
     }
+    CupertinoSlider(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        enabled = enabled,
+        valueRange = valueRange,
+        steps = steps,
+        onValueChangeFinished = onValueChangeFinished,
+        backdrop = effectiveBackdrop,
+        accentColor = accentColor ?: MaterialTheme.colorScheme.primary,
+    )
 }
 
 @Composable

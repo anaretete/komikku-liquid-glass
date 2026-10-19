@@ -18,6 +18,11 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 import com.kyant.shapes.Capsule
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
@@ -118,6 +123,10 @@ fun ChapterNavigator(
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        val effectiveReaderBackdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+            drawRect(if (isDark) Color(0xFF141416) else Color(0xFFF2F2F6))
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,28 +134,20 @@ fun ChapterNavigator(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isGlass) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                        .border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                            CircleShape,
-                        )
-                        .clickable(
-                            enabled = if (isRtl) enabledNext else enabledPrevious,
-                            onClick = if (isRtl) onNextChapter else onPreviousChapter,
-                        ),
-                    contentAlignment = Alignment.Center,
+                LiquidIconButton(
+                    onClick = if (isRtl) onNextChapter else onPreviousChapter,
+                    enabled = if (isRtl) enabledNext else enabledPrevious,
+                    size = 42.dp,
+                    backdrop = effectiveReaderBackdrop,
+                    surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.SkipPrevious,
                         contentDescription = stringResource(
                             if (isRtl) MR.strings.action_next_chapter else MR.strings.action_previous_chapter,
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             } else {
@@ -165,28 +166,29 @@ fun ChapterNavigator(
             }
 
         if (totalPages > 1) {
-            val sliderModifier = Modifier
-                .weight(1f)
-                .clip(Capsule())
-                .background(
-                    if (isGlass) {
-                        if (isDark) Color(0x991C1C1E) else Color(0xBBFFFFFF)
-                    } else {
-                        backgroundColor
-                    },
-                )
-                .then(
-                    if (isGlass) {
-                        Modifier.border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f),
-                            Capsule(),
-                        )
-                    } else {
-                        Modifier
-                    },
-                )
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+            val sliderHousingBackdrop = rememberLayerBackdrop()
+            val sliderModifier = if (isGlass) {
+                Modifier
+                    .weight(1f)
+                    .drawBackdrop(
+                        backdrop = effectiveReaderBackdrop,
+                        shape = { Capsule() },
+                        exportedBackdrop = sliderHousingBackdrop,
+                        effects = {
+                            vibrancy()
+                            blur(16.dp.toPx())
+                            lens(16.dp.toPx(), 28.dp.toPx(), depthEffect = true, chromaticAberration = true)
+                        },
+                        onDrawSurface = { drawRect(Color(0xFF141416).copy(alpha = 0.55f)) },
+                    )
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            } else {
+                Modifier
+                    .weight(1f)
+                    .clip(Capsule())
+                    .background(backgroundColor)
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            }
             CompositionLocalProvider(
                 LocalLayoutDirection provides layoutDirection,
             ) {
@@ -228,6 +230,8 @@ fun ChapterNavigator(
                             onPageIndexChange(newPageIndex)
                         },
                         interactionSource = interactionSource,
+                        backdrop = if (isGlass) sliderHousingBackdrop else null,
+                        accentColor = Color(0xFF0A84FF),
                     )
 
                     Text(
@@ -243,28 +247,20 @@ fun ChapterNavigator(
             }
 
             if (isGlass) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                        .border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                            CircleShape,
-                        )
-                        .clickable(
-                            enabled = if (isRtl) enabledPrevious else enabledNext,
-                            onClick = if (isRtl) onPreviousChapter else onNextChapter,
-                        ),
-                    contentAlignment = Alignment.Center,
+                LiquidIconButton(
+                    onClick = if (isRtl) onPreviousChapter else onNextChapter,
+                    enabled = if (isRtl) enabledPrevious else enabledNext,
+                    size = 42.dp,
+                    backdrop = effectiveReaderBackdrop,
+                    surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.SkipNext,
                         contentDescription = stringResource(
                             if (isRtl) MR.strings.action_previous_chapter else MR.strings.action_next_chapter,
                         ),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             } else {
@@ -325,28 +321,23 @@ fun ChapterNavigatorVert(
         )
         val textColor = MaterialTheme.colorScheme.onSurface
 
+        val effectiveReaderBackdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
+            drawRect(if (isDark) Color(0xFF141416) else Color(0xFFF2F2F6))
+        }
+
         if (isGlass) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                    .border(
-                        0.5.dp,
-                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                        CircleShape,
-                    )
-                    .clickable(
-                        enabled = enabledPrevious,
-                        onClick = onPreviousChapter,
-                    ),
-                contentAlignment = Alignment.Center,
+            LiquidIconButton(
+                onClick = onPreviousChapter,
+                enabled = enabledPrevious,
+                size = 42.dp,
+                backdrop = effectiveReaderBackdrop,
+                surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.SkipPrevious,
                     contentDescription = stringResource(MR.strings.action_previous_chapter),
-                    modifier = Modifier.rotate(90f),
-                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.rotate(90f).size(24.dp),
+                    tint = Color.White,
                 )
             }
         } else {
@@ -364,28 +355,29 @@ fun ChapterNavigatorVert(
         }
 
         if (totalPages > 1) {
-            val sliderModifier = Modifier
-                .weight(1f)
-                .clip(Capsule())
-                .background(
-                    if (isGlass) {
-                        if (isDark) Color(0x991C1C1E) else Color(0xBBFFFFFF)
-                    } else {
-                        backgroundColor
-                    },
-                )
-                .then(
-                    if (isGlass) {
-                        Modifier.border(
-                            0.5.dp,
-                            if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f),
-                            Capsule(),
-                        )
-                    } else {
-                        Modifier
-                    },
-                )
-                .padding(vertical = 12.dp, horizontal = 4.dp)
+            val vertSliderHousingBackdrop = rememberLayerBackdrop()
+            val sliderModifier = if (isGlass) {
+                Modifier
+                    .weight(1f)
+                    .drawBackdrop(
+                        backdrop = effectiveReaderBackdrop,
+                        shape = { Capsule() },
+                        exportedBackdrop = vertSliderHousingBackdrop,
+                        effects = {
+                            vibrancy()
+                            blur(16.dp.toPx())
+                            lens(16.dp.toPx(), 28.dp.toPx(), depthEffect = true, chromaticAberration = true)
+                        },
+                        onDrawSurface = { drawRect(Color(0xFF141416).copy(alpha = 0.55f)) },
+                    )
+                    .padding(vertical = 12.dp, horizontal = 4.dp)
+            } else {
+                Modifier
+                    .weight(1f)
+                    .clip(Capsule())
+                    .background(backgroundColor)
+                    .padding(vertical = 12.dp, horizontal = 4.dp)
+            }
             Column(
                 modifier = sliderModifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -415,6 +407,7 @@ fun ChapterNavigatorVert(
                         modifier = Modifier
                             .weight(1f)
                             .padding(vertical = 4.dp),
+                        backdrop = if (isGlass) vertSliderHousingBackdrop else null,
                     )
 
                     Text(
@@ -429,27 +422,18 @@ fun ChapterNavigatorVert(
         }
 
         if (isGlass) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(if (isDark) Color(0x991C1C1E) else Color(0xCCFFFFFF))
-                    .border(
-                        0.5.dp,
-                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f),
-                        CircleShape,
-                    )
-                    .clickable(
-                        enabled = enabledNext,
-                        onClick = onNextChapter,
-                    ),
-                contentAlignment = Alignment.Center,
+            LiquidIconButton(
+                onClick = onNextChapter,
+                enabled = enabledNext,
+                size = 42.dp,
+                backdrop = effectiveReaderBackdrop,
+                surfaceColor = Color(0xFF141416).copy(alpha = 0.55f),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.SkipNext,
                     contentDescription = stringResource(MR.strings.action_next_chapter),
-                    modifier = Modifier.rotate(90f),
-                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.rotate(90f).size(24.dp),
+                    tint = Color.White,
                 )
             }
         } else {

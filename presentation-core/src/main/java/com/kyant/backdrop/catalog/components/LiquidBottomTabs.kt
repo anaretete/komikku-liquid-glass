@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -65,7 +63,7 @@ fun LiquidBottomTabs(
     backdrop: Backdrop,
     tabsCount: Int,
     modifier: Modifier = Modifier,
-    accentColor: Color = MaterialTheme.colorScheme.primary,
+    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF0088FF) else Color(0xFF0091FF),
     content: @Composable RowScope.() -> Unit
 ) {
     val isLightTheme = !isSystemInDarkTheme()
@@ -96,7 +94,7 @@ fun LiquidBottomTabs(
 
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
-        var currentIndex by remember {
+        var currentIndex by remember(selectedTabIndex) {
             mutableIntStateOf(selectedTabIndex())
         }
         val dampedDragAnimation = remember(animationScope) {
@@ -112,7 +110,6 @@ fun LiquidBottomTabs(
                     val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
                     currentIndex = targetIndex
                     animateToValue(targetIndex.toFloat())
-                    onTabSelected(targetIndex)
                     animationScope.launch {
                         offsetAnimation.animateTo(
                             0f,
@@ -131,12 +128,19 @@ fun LiquidBottomTabs(
                 }
             )
         }
-        val selectedIndex = selectedTabIndex()
-        LaunchedEffect(selectedIndex) {
-            if (currentIndex != selectedIndex || dampedDragAnimation.targetValue != selectedIndex.toFloat()) {
-                currentIndex = selectedIndex
-                dampedDragAnimation.animateToValue(selectedIndex.toFloat())
-            }
+        LaunchedEffect(selectedTabIndex) {
+            snapshotFlow { selectedTabIndex() }
+                .collectLatest { index ->
+                    currentIndex = index
+                }
+        }
+        LaunchedEffect(dampedDragAnimation) {
+            snapshotFlow { currentIndex }
+                .drop(1)
+                .collectLatest { index ->
+                    dampedDragAnimation.animateToValue(index.toFloat())
+                    onTabSelected(index)
+                }
         }
 
         val interactiveHighlight = remember(animationScope) {
@@ -201,15 +205,10 @@ fun LiquidBottomTabs(
                             val progress = dampedDragAnimation.pressProgress
                             vibrancy()
                             blur(8f.dp.toPx())
-                            if (progress > 0.001f) {
-                                try {
-                                    lens(
-                                        (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                        (24f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    )
-                                } catch (_: Throwable) {
-                                }
-                            }
+                            lens(
+                                24f.dp.toPx() * progress,
+                                24f.dp.toPx() * progress
+                            )
                         },
                         highlight = {
                             val progress = dampedDragAnimation.pressProgress
@@ -220,7 +219,8 @@ fun LiquidBottomTabs(
                     .then(interactiveHighlight.modifier)
                     .height(56f.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 4f.dp),
+                    .padding(horizontal = 4f.dp)
+                    .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
                 verticalAlignment = Alignment.CenterVertically,
                 content = content
             )
@@ -241,16 +241,11 @@ fun LiquidBottomTabs(
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        if (progress > 0.001f) {
-                            try {
-                                lens(
-                                    (10f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    (14f.dp.toPx() * progress).coerceAtLeast(0.1f),
-                                    chromaticAberration = true,
-                                )
-                            } catch (_: Throwable) {
-                            }
-                        }
+                        lens(
+                            10f.dp.toPx() * progress,
+                            14f.dp.toPx() * progress,
+                            chromaticAberration = true
+                        )
                     },
                     highlight = {
                         val progress = dampedDragAnimation.pressProgress
@@ -277,11 +272,10 @@ fun LiquidBottomTabs(
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
                         drawRect(
-                            if (isLightTheme) Color.Black.copy(0.08f)
-                            else Color.White.copy(0.08f),
+                            if (isLightTheme) Color.Black.copy(0.1f)
+                            else Color.White.copy(0.1f),
                             alpha = 1f - progress
                         )
-                        drawRect(accentColor.copy(alpha = if (isLightTheme) 0.12f else 0.20f), alpha = 1f - progress)
                         drawRect(Color.Black.copy(alpha = 0.03f * progress))
                     }
                 )

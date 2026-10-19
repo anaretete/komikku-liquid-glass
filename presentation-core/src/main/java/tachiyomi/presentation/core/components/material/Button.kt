@@ -248,17 +248,16 @@ fun OutlinedButton(
 ) {
     val isGlass = LocalLiquidGlassConfig.current.enabled
     val effectiveShape = if (isGlass && shape == CircleShape) Capsule() else shape
-    val primary = MaterialTheme.colorScheme.primary
+    val isDark = isSystemInDarkTheme()
     val effectiveColors = if (isGlass) {
         M3ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = primary,
-            disabledContentColor = primary.copy(alpha = 0.38f),
+            containerColor = if (isDark) Color(0xFF2C2C2E) else Color(0xFFE5E5EA),
+            contentColor = if (isDark) Color.White else Color(0xFF1C1C1E),
+            disabledContainerColor = (if (isDark) Color(0xFF2C2C2E) else Color(0xFFE5E5EA)).copy(alpha = 0.5f),
+            disabledContentColor = (if (isDark) Color.White else Color(0xFF1C1C1E)).copy(alpha = 0.38f),
         )
     } else colors
-    val effectiveBorder = if (isGlass) {
-        BorderStroke(1.dp, primary.copy(alpha = 0.40f))
-    } else border
+    val effectiveBorder = if (isGlass) null else border
 
     M3OutlinedButton(
         onClick = onClick,

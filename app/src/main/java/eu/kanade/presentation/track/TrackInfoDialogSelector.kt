@@ -18,8 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SelectableDates
+import androidx.compose.ui.graphics.Color
+import tachiyomi.presentation.core.components.material.CupertinoCheckmark
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import tachiyomi.presentation.core.components.material.TextButton
@@ -63,23 +64,23 @@ fun TrackStatusSelector(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .selectable(
                                     selected = isSelected,
                                     onClick = { onSelectionChange(key) },
                                 )
                                 .fillMaxWidth()
-                                .minimumInteractiveComponentSize(),
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
                         ) {
-                            RadioButton(
-                                selected = isSelected,
-                                onClick = null,
-                            )
                             Text(
                                 text = value?.let { stringResource(it) } ?: "",
                                 style = MaterialTheme.typography.bodyLarge.merge(),
-                                modifier = Modifier.padding(start = 24.dp),
+                                color = if (isSelected) Color(0xFF0A84FF) else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f),
                             )
+                            if (isSelected) {
+                                CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                            }
                         }
                     }
                 }
