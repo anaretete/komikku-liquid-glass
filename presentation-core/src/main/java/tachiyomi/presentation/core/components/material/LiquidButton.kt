@@ -12,6 +12,7 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.catalog.components.LiquidButton as KyantLiquidButton
 
+import androidx.compose.material3.MaterialTheme
 import com.kyant.shapes.Capsule
 
 @Composable
@@ -21,7 +22,7 @@ fun LiquidButton(
     backdrop: Backdrop? = null,
     enabled: Boolean = true,
     isInteractive: Boolean = true,
-    tint: Color = Color.Unspecified,
+    tint: Color = MaterialTheme.colorScheme.primary,
     surfaceColor: Color = Color.Unspecified,
     contentColor: Color = Color.Unspecified,
     shape: Shape = Capsule(),

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,7 +46,7 @@ fun OutlinedButtonWithArrow(
             text = text,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF0A84FF),
+            color = MaterialTheme.colorScheme.primary,
             letterSpacing = (-0.2).sp,
         )
         Icon(

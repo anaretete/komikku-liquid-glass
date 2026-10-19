@@ -58,7 +58,7 @@ fun CupertinoSlider(
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
     backdrop: Backdrop? = null,
-    accentColor: Color? = null,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val isDark = isSystemInDarkTheme()
     val activeBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
@@ -71,50 +71,27 @@ fun CupertinoSlider(
     val rangeSpan = (valueRange.endInclusive - valueRange.start).coerceAtLeast(0.0001f)
     val threshold = if (steps > 0) rangeSpan / (steps + 1) else 0.001f
 
-    if (accentColor != null) {
-        LiquidSlider(
-            value = { currentValue },
-            onValueChange = { newValue ->
-                if (enabled) {
-                    val clamped = if (steps > 0) {
-                        val stepCount = steps + 1
-                        val fraction = ((newValue - valueRange.start) / rangeSpan).coerceIn(0f, 1f)
-                        val step = (fraction * stepCount).roundToInt()
-                        valueRange.start + (step.toFloat() / stepCount) * rangeSpan
-                    } else {
-                        newValue
-                    }
-                    currentOnValueChange(clamped)
+    LiquidSlider(
+        value = { currentValue },
+        onValueChange = { newValue ->
+            if (enabled) {
+                val clamped = if (steps > 0) {
+                    val stepCount = steps + 1
+                    val fraction = ((newValue - valueRange.start) / rangeSpan).coerceIn(0f, 1f)
+                    val step = (fraction * stepCount).roundToInt()
+                    valueRange.start + (step.toFloat() / stepCount) * rangeSpan
+                } else {
+                    newValue
                 }
-            },
-            valueRange = valueRange,
-            visibilityThreshold = threshold,
-            backdrop = activeBackdrop,
-            modifier = modifier.alpha(if (enabled) 1f else 0.5f),
-            accentColor = accentColor,
-        )
-    } else {
-        LiquidSlider(
-            value = { currentValue },
-            onValueChange = { newValue ->
-                if (enabled) {
-                    val clamped = if (steps > 0) {
-                        val stepCount = steps + 1
-                        val fraction = ((newValue - valueRange.start) / rangeSpan).coerceIn(0f, 1f)
-                        val step = (fraction * stepCount).roundToInt()
-                        valueRange.start + (step.toFloat() / stepCount) * rangeSpan
-                    } else {
-                        newValue
-                    }
-                    currentOnValueChange(clamped)
-                }
-            },
-            valueRange = valueRange,
-            visibilityThreshold = threshold,
-            backdrop = activeBackdrop,
-            modifier = modifier.alpha(if (enabled) 1f else 0.5f),
-        )
-    }
+                currentOnValueChange(clamped)
+            }
+        },
+        valueRange = valueRange,
+        visibilityThreshold = threshold,
+        backdrop = activeBackdrop,
+        modifier = modifier.alpha(if (enabled) 1f else 0.5f),
+        accentColor = accentColor,
+    )
 }
 
 /**

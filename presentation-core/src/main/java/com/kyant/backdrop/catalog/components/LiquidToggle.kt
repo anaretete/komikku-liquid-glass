@@ -46,6 +46,7 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.material3.MaterialTheme
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
@@ -54,7 +55,7 @@ fun LiquidToggle(
     onSelect: (Boolean) -> Unit,
     backdrop: Backdrop,
     modifier: Modifier = Modifier,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF34C759) else Color(0xFF30D158),
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()

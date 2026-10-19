@@ -205,7 +205,7 @@ private fun DialogRow(
             modifier = Modifier.weight(1f),
         )
         if (isSelected) {
-            CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+            CupertinoCheckmark(checked = true)
         }
     }
 }

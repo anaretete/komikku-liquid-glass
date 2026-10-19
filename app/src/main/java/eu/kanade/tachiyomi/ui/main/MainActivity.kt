@@ -246,8 +246,6 @@ class MainActivity : BaseActivity() {
                 restoring -> RestoringBannerBackgroundColor
                 // KMK <--
                 indexing -> IndexingBannerBackgroundColor
-                downloadOnly -> DownloadedOnlyBannerBackgroundColor
-                incognito -> IncognitoModeBannerBackgroundColor
                 else -> MaterialTheme.colorScheme.surface
             }
             LaunchedEffect(isSystemInDarkTheme, statusBarBackgroundColor) {

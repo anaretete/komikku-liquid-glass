@@ -47,6 +47,7 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.material3.MaterialTheme
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
@@ -57,7 +58,7 @@ fun LiquidSlider(
     visibilityThreshold: Float = 0.001f,
     backdrop: Backdrop,
     modifier: Modifier = Modifier,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF0088FF) else Color(0xFF0091FF)
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()

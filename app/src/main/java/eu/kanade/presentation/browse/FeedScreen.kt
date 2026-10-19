@@ -320,7 +320,7 @@ fun <T> RadioSelectorSearchable(
             ) {
                 Text(option, maxLines = 1, modifier = Modifier.weight(1f))
                 if (isSelected) {
-                    CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                    CupertinoCheckmark(checked = true)
                 }
             }
         }
@@ -363,7 +363,7 @@ fun RadioSelectorSearchable(
                     option()
                 }
                 if (isSelected) {
-                    CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                    CupertinoCheckmark(checked = true)
                 }
             }
         }

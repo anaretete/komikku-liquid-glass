@@ -75,11 +75,11 @@ fun TrackStatusSelector(
                             Text(
                                 text = value?.let { stringResource(it) } ?: "",
                                 style = MaterialTheme.typography.bodyLarge.merge(),
-                                color = if (isSelected) Color(0xFF0A84FF) else MaterialTheme.colorScheme.onSurface,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f),
                             )
                             if (isSelected) {
-                                CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                                CupertinoCheckmark(checked = true)
                             }
                         }
                     }

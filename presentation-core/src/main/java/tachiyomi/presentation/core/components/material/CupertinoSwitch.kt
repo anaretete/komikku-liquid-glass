@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
@@ -50,6 +51,7 @@ fun CupertinoSwitch(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     backdrop: Backdrop? = null,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val effectiveBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberDefaultSwitchBackdrop()
     val currentChecked by rememberUpdatedState(checked)
@@ -59,6 +61,7 @@ fun CupertinoSwitch(
         onSelect = { newValue -> if (enabled) currentOnCheckedChange?.invoke(newValue) },
         backdrop = effectiveBackdrop,
         modifier = modifier.alpha(if (enabled) 1f else 0.5f),
+        accentColor = accentColor,
     )
 }
 
@@ -72,9 +75,10 @@ fun SolidCupertinoSwitch(
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     val isDark = isSystemInDarkTheme()
-    val activeColor = if (isDark) Color(0xFF30D158) else Color(0xFF34C759)
+    val activeColor = accentColor
     val inactiveColor = if (isDark) Color(0xFF39393D) else Color(0xFFE9E9EB)
 
     val trackColor by animateColorAsState(

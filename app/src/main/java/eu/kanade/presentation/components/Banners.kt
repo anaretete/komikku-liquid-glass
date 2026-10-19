@@ -22,6 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
@@ -171,32 +174,108 @@ fun AppStateBanners(
 
 @Composable
 private fun DownloadedOnlyModeBanner(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(MR.strings.label_downloaded_only),
+    val isDark = isSystemInDarkTheme()
+    androidx.compose.foundation.layout.Box(
         modifier = Modifier
-            .background(DownloadedOnlyBannerBackgroundColor)
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        color = MaterialTheme.colorScheme.onTertiary,
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.labelMedium,
-    )
+        contentAlignment = androidx.compose.ui.Alignment.Center,
+    ) {
+        Row(
+            modifier = Modifier
+                .androidx.compose.ui.draw.shadow(
+                    elevation = 4.dp,
+                    shape = com.kyant.shapes.Capsule(),
+                    ambientColor = Color.Black.copy(0.2f),
+                    spotColor = Color.Black.copy(0.25f),
+                )
+                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .background(
+                    if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
+                    else Color(0xFFFFFFFF).copy(alpha = 0.92f),
+                )
+                .androidx.compose.foundation.border(
+                    androidx.compose.foundation.BorderStroke(
+                        0.5.dp,
+                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
+                    ),
+                    shape = com.kyant.shapes.Capsule(),
+                )
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            androidx.compose.material3.Icon(
+                imageVector = androidx.compose.material.icons.Icons.Outlined.CloudDownload,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.androidx.compose.foundation.layout.size(15.dp),
+            )
+            Text(
+                text = stringResource(MR.strings.label_downloaded_only),
+                color = if (isDark) Color.White else Color(0xFF1C1C1E),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    letterSpacing = (-0.1).sp,
+                ),
+            )
+        }
+    }
 }
 
 @Composable
 private fun IncognitoModeBanner(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(MR.strings.pref_incognito_mode),
+    val isDark = isSystemInDarkTheme()
+    androidx.compose.foundation.layout.Box(
         modifier = Modifier
-            .background(IncognitoModeBannerBackgroundColor)
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        color = MaterialTheme.colorScheme.onPrimary,
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.labelMedium,
-    )
+        contentAlignment = androidx.compose.ui.Alignment.Center,
+    ) {
+        Row(
+            modifier = Modifier
+                .androidx.compose.ui.draw.shadow(
+                    elevation = 4.dp,
+                    shape = com.kyant.shapes.Capsule(),
+                    ambientColor = Color.Black.copy(0.2f),
+                    spotColor = Color.Black.copy(0.25f),
+                )
+                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .background(
+                    if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
+                    else Color(0xFFFFFFFF).copy(alpha = 0.92f),
+                )
+                .androidx.compose.foundation.border(
+                    androidx.compose.foundation.BorderStroke(
+                        0.5.dp,
+                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
+                    ),
+                    shape = com.kyant.shapes.Capsule(),
+                )
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            androidx.compose.material3.Icon(
+                imageVector = androidx.compose.material.icons.Icons.Outlined.VisibilityOff,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.androidx.compose.foundation.layout.size(15.dp),
+            )
+            Text(
+                text = stringResource(MR.strings.pref_incognito_mode),
+                color = if (isDark) Color.White else Color(0xFF1C1C1E),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    letterSpacing = (-0.1).sp,
+                ),
+            )
+        }
+    }
 }
 
 @Composable
@@ -206,34 +285,60 @@ private fun IndexingDownloadBanner(
     text: String = stringResource(MR.strings.download_notifier_cache_renewal),
     // KMK <--
 ) {
+    val isDark = isSystemInDarkTheme()
     val density = LocalDensity.current
-    Row(
+    androidx.compose.foundation.layout.Box(
         modifier = Modifier
-            .background(color = IndexingBannerBackgroundColor)
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        horizontalArrangement = Arrangement.Center,
+        contentAlignment = androidx.compose.ui.Alignment.Center,
     ) {
-        var textHeight by remember { mutableStateOf(0.dp) }
-        CircularProgressIndicator(
-            modifier = Modifier.requiredSize(textHeight),
-            color = MaterialTheme.colorScheme.onSecondary,
-            strokeWidth = textHeight / 8,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            // KMK -->
-            text = text,
-            // KMK <--
-            color = MaterialTheme.colorScheme.onSecondary,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.labelMedium,
-            onTextLayout = {
-                with(density) {
-                    textHeight = it.size.height.toDp()
-                }
-            },
-        )
+        Row(
+            modifier = Modifier
+                .androidx.compose.ui.draw.shadow(
+                    elevation = 4.dp,
+                    shape = com.kyant.shapes.Capsule(),
+                    ambientColor = Color.Black.copy(0.2f),
+                    spotColor = Color.Black.copy(0.25f),
+                )
+                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .background(
+                    if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
+                    else Color(0xFFFFFFFF).copy(alpha = 0.92f),
+                )
+                .androidx.compose.foundation.border(
+                    androidx.compose.foundation.BorderStroke(
+                        0.5.dp,
+                        if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
+                    ),
+                    shape = com.kyant.shapes.Capsule(),
+                )
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            var textHeight by remember { mutableStateOf(0.dp) }
+            CircularProgressIndicator(
+                modifier = Modifier.requiredSize(14.dp),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp,
+            )
+            Text(
+                text = text,
+                color = if (isDark) Color.White else Color(0xFF1C1C1E),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                    letterSpacing = (-0.1).sp,
+                ),
+                onTextLayout = {
+                    with(density) {
+                        textHeight = it.size.height.toDp()
+                    }
+                },
+            )
+        }
     }
 }

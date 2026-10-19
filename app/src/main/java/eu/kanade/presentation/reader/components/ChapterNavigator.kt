@@ -231,7 +231,7 @@ fun ChapterNavigator(
                         },
                         interactionSource = interactionSource,
                         backdrop = if (isGlass) sliderHousingBackdrop else null,
-                        accentColor = Color(0xFF0A84FF),
+                        accentColor = MaterialTheme.colorScheme.primary,
                     )
 
                     Text(

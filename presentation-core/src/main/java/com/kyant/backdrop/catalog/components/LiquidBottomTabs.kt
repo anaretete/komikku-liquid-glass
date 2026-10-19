@@ -50,6 +50,9 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.material3.MaterialTheme
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -63,9 +66,10 @@ fun LiquidBottomTabs(
     backdrop: Backdrop,
     tabsCount: Int,
     modifier: Modifier = Modifier,
-    accentColor: Color = if (!isSystemInDarkTheme()) Color(0xFF0088FF) else Color(0xFF0091FF),
+    accentColor: Color = MaterialTheme.colorScheme.primary,
     content: @Composable RowScope.() -> Unit
 ) {
+    val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()
     val containerColor =
         if (isLightTheme) Color(0xFFFAFAFA).copy(0.4f)
@@ -97,6 +101,9 @@ fun LiquidBottomTabs(
         var currentIndex by remember(selectedTabIndex) {
             mutableIntStateOf(selectedTabIndex())
         }
+        var currentDragTab by remember {
+            mutableFloatStateOf(selectedTabIndex().toFloat())
+        }
         val dampedDragAnimation = remember(animationScope) {
             DampedDragAnimation(
                 animationScope = animationScope,
@@ -105,11 +112,14 @@ fun LiquidBottomTabs(
                 visibilityThreshold = 0.001f,
                 initialScale = 1f,
                 pressedScale = 78f / 56f,
-                onDragStarted = {},
+                onDragStarted = {
+                    currentDragTab = selectedTabIndex().toFloat()
+                },
                 onDragStopped = {
-                    val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
+                    val targetIndex = currentDragTab.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
                     currentIndex = targetIndex
                     animateToValue(targetIndex.toFloat())
+                    onTabSelected(targetIndex)
                     animationScope.launch {
                         offsetAnimation.animateTo(
                             0f,
@@ -118,10 +128,9 @@ fun LiquidBottomTabs(
                     }
                 },
                 onDrag = { _, dragAmount ->
-                    updateValue(
-                        (targetValue + dragAmount.x / tabWidth * if (isLtr) 1f else -1f)
-                            .fastCoerceIn(0f, (tabsCount - 1).toFloat())
-                    )
+                    val delta = dragAmount.x / tabWidth * if (isLtr) 1f else -1f
+                    currentDragTab = (currentDragTab + delta).fastCoerceIn(0f, (tabsCount - 1).toFloat())
+                    updateValue(currentDragTab)
                     animationScope.launch {
                         offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
                     }
@@ -132,6 +141,8 @@ fun LiquidBottomTabs(
             snapshotFlow { selectedTabIndex() }
                 .collectLatest { index ->
                     currentIndex = index
+                    currentDragTab = index.toFloat()
+                    dampedDragAnimation.animateToValue(index.toFloat())
                 }
         }
         LaunchedEffect(dampedDragAnimation) {
@@ -139,7 +150,6 @@ fun LiquidBottomTabs(
                 .drop(1)
                 .collectLatest { index ->
                     dampedDragAnimation.animateToValue(index.toFloat())
-                    onTabSelected(index)
                 }
         }
 
@@ -242,9 +252,10 @@ fun LiquidBottomTabs(
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
                         lens(
-                            10f.dp.toPx() * progress,
-                            14f.dp.toPx() * progress,
-                            chromaticAberration = true
+                            refractionHeight = (10f.dp.toPx() * progress * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                            refractionAmount = (14f.dp.toPx() * progress * config.refractionMultiplier).coerceAtLeast(0.1f),
+                            depthEffect = config.depthEffect,
+                            chromaticAberration = config.chromaticAberration,
                         )
                     },
                     highlight = {
@@ -277,6 +288,7 @@ fun LiquidBottomTabs(
                             alpha = 1f - progress
                         )
                         drawRect(Color.Black.copy(alpha = 0.03f * progress))
+                        drawRect(accentColor.copy(alpha = 0.12f * (1f - progress) + 0.22f * progress))
                     }
                 )
                 .height(56f.dp)

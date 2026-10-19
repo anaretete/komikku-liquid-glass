@@ -824,7 +824,7 @@ fun <T> CupertinoOptionsDialog(
                             modifier = Modifier.weight(1f),
                         )
                         if (isSelected) {
-                            CupertinoCheckmark(checked = true, tint = Color(0xFF0A84FF))
+                            CupertinoCheckmark(checked = true)
                         }
                     }
                     if (index < options.lastIndex) {
@@ -846,7 +846,7 @@ fun <T> CupertinoOptionsDialog(
             ) {
                 Text(
                     text = tachiyomi.presentation.core.i18n.stringResource(tachiyomi.i18n.MR.strings.action_cancel),
-                    color = Color(0xFF0A84FF),
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Normal,
                     fontSize = 17.sp,
                 )

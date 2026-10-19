@@ -80,27 +80,34 @@ class GetApplicationRelease(
         versionName: String,
         versionTag: String,
     ): Boolean {
-        // Removes prefixes like "r" or "v"
-        val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
-        return if (isPreview) {
-            // Preview builds: based on releases in "komikku-app/komikku-preview" repo
-            // tagged as something like "r1234"
-            newVersion.toInt() > commitCount
-        } else {
-            // Release builds: based on releases in "komikku-app/komikku" repo
-            // tagged as something like "v0.1.2"
-            val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
-
-            val newSemVer = newVersion.split(".").map { it.toInt() }
-            val oldSemVer = oldVersion.split(".").map { it.toInt() }
-
-            oldSemVer.mapIndexed { index, i ->
-                if (newSemVer[index] > i) {
-                    return true
-                }
-                if (newSemVer[index] < i) return false
+        return try {
+            val commitRegex = Regex("r(\\d+)")
+            val newCommitMatch = commitRegex.find(versionTag)
+            if (isPreview && newCommitMatch != null) {
+                val newCount = newCommitMatch.groupValues[1].toIntOrNull() ?: 0
+                return newCount > commitCount
             }
 
+            val cleanNew = versionTag.substringBefore('-').substringBefore('_').replace("[^\\d.]".toRegex(), "")
+            val cleanOld = versionName.substringBefore('-').substringBefore('_').replace("[^\\d.]".toRegex(), "")
+
+            val newSemVer = cleanNew.split('.').mapNotNull { it.toIntOrNull() }
+            val oldSemVer = cleanOld.split('.').mapNotNull { it.toIntOrNull() }
+
+            val maxParts = maxOf(newSemVer.size, oldSemVer.size)
+            for (i in 0 until maxParts) {
+                val newPart = newSemVer.getOrElse(i) { 0 }
+                val oldPart = oldSemVer.getOrElse(i) { 0 }
+                if (newPart > oldPart) return true
+                if (newPart < oldPart) return false
+            }
+
+            if (isPreview && newCommitMatch != null) {
+                (newCommitMatch.groupValues[1].toIntOrNull() ?: 0) > commitCount
+            } else {
+                false
+            }
+        } catch (_: Exception) {
             false
         }
     }

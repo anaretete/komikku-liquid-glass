@@ -665,7 +665,7 @@ private fun MangaScreenSmallImpl(
                                         scaleY = resumeScale
                                     }
                                     .clip(com.kyant.shapes.Capsule())
-                                    .background(Color(0xFF0A84FF))
+                                    .background(MaterialTheme.colorScheme.primary)
                                     .clickable(
                                         interactionSource = resumeInteraction,
                                         indication = null,
