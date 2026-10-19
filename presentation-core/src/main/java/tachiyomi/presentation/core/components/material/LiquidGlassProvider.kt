@@ -39,9 +39,15 @@ import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangularShape
 
+enum class GlassStyle {
+    DISABLED,
+    FROSTED_GLASS,
+    LIQUID_GLASS,
+}
+
 @Immutable
 data class LiquidGlassConfig(
-    val enabled: Boolean = true,
+    val glassStyle: GlassStyle = GlassStyle.LIQUID_GLASS,
     val chromaticAberration: Boolean = true,
     val refractionMultiplier: Float = 1.0f,
     val blurMultiplier: Float = 1.0f,
@@ -49,7 +55,11 @@ data class LiquidGlassConfig(
     val tintAlphaMultiplier: Float = 1.0f,
     val springPhysicsEnabled: Boolean = true,
     val depthEffect: Boolean = true,
-)
+) {
+    val enabled: Boolean get() = glassStyle != GlassStyle.DISABLED
+    val isFrosted: Boolean get() = glassStyle == GlassStyle.FROSTED_GLASS
+    val isLiquid: Boolean get() = glassStyle == GlassStyle.LIQUID_GLASS
+}
 
 val LocalLiquidGlassConfig = compositionLocalOf { LiquidGlassConfig() }
 
@@ -146,17 +156,19 @@ fun Modifier.liquidGlassSurface(
             if (effectiveBlur > 0.5f) {
                 blur(effectiveBlur)
             }
-            try {
-                lens(
-                    refractionHeight = (refractionHeight.toPx() * config.refractionMultiplier * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                    refractionAmount = (dynamicRefractionAmount.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
-                    depthEffect = config.depthEffect,
-                    chromaticAberration = config.chromaticAberration,
-                )
-            } catch (_: Throwable) {
+            if (config.isLiquid) {
+                try {
+                    lens(
+                        refractionHeight = (refractionHeight.toPx() * config.refractionMultiplier * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                        refractionAmount = (dynamicRefractionAmount.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                        depthEffect = config.depthEffect,
+                        chromaticAberration = config.chromaticAberration,
+                    )
+                } catch (_: Throwable) {
+                }
             }
         },
-        highlight = { Highlight.Default },
+        highlight = if (config.isLiquid) { { Highlight.Default } } else { null },
         shadow = { Shadow.Default },
         onDrawSurface = {
             if (tintColor.isSpecified && tintColor != Color.Transparent) {

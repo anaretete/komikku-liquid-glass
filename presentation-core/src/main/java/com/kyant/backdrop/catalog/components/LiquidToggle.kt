@@ -43,6 +43,7 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
 fun LiquidToggle(
@@ -51,6 +52,7 @@ fun LiquidToggle(
     backdrop: Backdrop,
     modifier: Modifier = Modifier,
 ) {
+    val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
         if (isLightTheme) {
@@ -78,7 +80,7 @@ fun LiquidToggle(
             valueRange = 0f..1f,
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = 1.5f,
+            pressedScale = 1.15f,
             onDragStarted = {},
             onDragStopped = {
                 if (didDrag) {
@@ -169,20 +171,30 @@ fun LiquidToggle(
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        blur(8f.dp.toPx() * (1f - progress))
-                        lens(
-                            5f.dp.toPx() * progress,
-                            10f.dp.toPx() * progress,
-                            chromaticAberration = true,
-                        )
+                        val blurPx = (8f.dp.toPx() * (1f - progress) * config.blurMultiplier).coerceAtLeast(0f)
+                        if (blurPx > 0.5f) {
+                            blur(blurPx)
+                        }
+                        if (config.isLiquid) {
+                            lens(
+                                (5f.dp.toPx() * progress * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                (10f.dp.toPx() * progress * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                depthEffect = config.depthEffect,
+                                chromaticAberration = config.chromaticAberration,
+                            )
+                        }
                     },
-                    highlight = {
-                        val progress = dampedDragAnimation.pressProgress
-                        Highlight.Ambient.copy(
-                            width = Highlight.Ambient.width / 1.5f,
-                            blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                            alpha = progress,
-                        )
+                    highlight = if (config.isLiquid) {
+                        {
+                            val progress = dampedDragAnimation.pressProgress
+                            Highlight.Ambient.copy(
+                                width = Highlight.Ambient.width / 1.5f,
+                                blurRadius = Highlight.Ambient.blurRadius / 1.5f,
+                                alpha = progress,
+                            )
+                        }
+                    } else {
+                        null
                     },
                     shadow = {
                         Shadow(
@@ -200,9 +212,6 @@ fun LiquidToggle(
                     layerBlock = {
                         scaleX = dampedDragAnimation.scaleX
                         scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 50f
-                        scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
-                        scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress

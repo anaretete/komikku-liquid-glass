@@ -2,12 +2,13 @@ package eu.kanade.presentation.more.settings.screen
 
 import android.app.Activity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -19,36 +20,24 @@ import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.more.settings.screen.appearance.AppCustomThemeColorPickerScreen
+import eu.kanade.presentation.more.settings.PreferenceScreen
 import eu.kanade.presentation.more.settings.screen.appearance.AppLanguageScreen
+import eu.kanade.presentation.more.settings.screen.appearance.AppCustomThemeColorPickerScreen
 import eu.kanade.presentation.more.settings.widget.AppThemeModePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
+import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.more.settings.PreferenceScreen
-import eu.kanade.presentation.util.LocalBackPress
-import tachiyomi.presentation.core.components.material.CupertinoSegmentedControl
-import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
-import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.material.GlassStyle
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
+import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -68,9 +57,7 @@ object SettingsAppearanceScreen : SearchableSettings {
     @Composable
     override fun Content() {
         val handleBack = LocalBackPress.current
-        var selectedTab by rememberSaveable { mutableIntStateOf(0) }
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
-        val scope = rememberCoroutineScope()
 
         val isGlass = LocalLiquidGlassConfig.current.enabled
         val isDark = isSystemInDarkTheme()
@@ -91,43 +78,10 @@ object SettingsAppearanceScreen : SearchableSettings {
             },
             containerColor = containerColor,
             content = { contentPadding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = contentPadding.calculateTopPadding()),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                    ) {
-                        CupertinoSegmentedControl(
-                            selectedTabIndex = selectedTab,
-                            onTabSelected = { selectedTab = it },
-                            tabs = listOf(
-                                "Theme & Display" to null,
-                                "Liquid Glass" to null,
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-
-                    val items = if (selectedTab == 0) {
-                        getAppearancePreferences(uiPreferences = uiPreferences)
-                    } else {
-                        SettingsLiquidGlassScreen.getLiquidGlassPreferences(
-                            uiPreferences = uiPreferences,
-                            scope = scope,
-                        )
-                    }
-
-                    PreferenceScreen(
-                        items = items,
-                        contentPadding = PaddingValues(
-                            bottom = contentPadding.calculateBottomPadding(),
-                        ),
-                    )
-                }
+                PreferenceScreen(
+                    items = getAppearancePreferences(uiPreferences = uiPreferences),
+                    contentPadding = contentPadding,
+                )
             },
         )
     }
@@ -242,10 +196,15 @@ object SettingsAppearanceScreen : SearchableSettings {
                         true
                     },
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = uiPreferences.liquidGlassEnabled(),
-                    title = "Liquid Glass UI",
-                    subtitle = "Refractive glass surfaces, chromatic aberration, and spring physics",
+                Preference.PreferenceItem.ListPreference(
+                    preference = uiPreferences.glassStyle(),
+                    entries = persistentMapOf(
+                        GlassStyle.DISABLED to "Disabled (Solid Opaque)",
+                        GlassStyle.FROSTED_GLASS to "Frosted Glass (Translucent Blur)",
+                        GlassStyle.LIQUID_GLASS to "Liquid Glass (Refractive Lens)",
+                    ),
+                    title = "Glass Effect",
+                    subtitle = "%s",
                 ),
             ),
         )

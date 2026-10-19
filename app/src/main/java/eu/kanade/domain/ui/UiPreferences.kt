@@ -7,6 +7,7 @@ import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
+import tachiyomi.presentation.core.components.material.GlassStyle
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -24,6 +25,7 @@ class UiPreferences(
 
     fun themeDarkAmoled() = preferenceStore.getBoolean("pref_theme_dark_amoled_key", false)
 
+    fun glassStyle() = preferenceStore.getEnum("pref_glass_style", GlassStyle.LIQUID_GLASS)
     fun liquidGlassEnabled() = preferenceStore.getBoolean("pref_liquid_glass_enabled", true)
     fun liquidGlassChromaticAberration() = preferenceStore.getBoolean("pref_liquid_glass_chromatic", true)
     fun liquidGlassRefractionStrength() = preferenceStore.getFloat("pref_liquid_glass_refraction", 1.0f)

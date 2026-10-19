@@ -186,12 +186,14 @@ fun LiquidBottomTabs(
                         if (blurPx > 0.5f) {
                             blur(blurPx)
                         }
-                        lens(
-                            refractionHeight = (24f.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                            refractionAmount = (24f.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
-                            depthEffect = config.depthEffect,
-                            chromaticAberration = config.chromaticAberration,
-                        )
+                        if (config.isLiquid) {
+                            lens(
+                                refractionHeight = (24f.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                refractionAmount = (24f.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                depthEffect = config.depthEffect,
+                                chromaticAberration = config.chromaticAberration,
+                            )
+                        }
                     },
                     layerBlock = {
                         val progress = dampedDragAnimation.pressProgress
@@ -232,16 +234,22 @@ fun LiquidBottomTabs(
                             if (blurPx > 0.5f) {
                                 blur(blurPx)
                             }
-                            lens(
-                                refractionHeight = (24f.dp.toPx() * lerp(0.6f, 1f, progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                                refractionAmount = (24f.dp.toPx() * lerp(0.6f, 1f, progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
-                                depthEffect = config.depthEffect,
-                                chromaticAberration = config.chromaticAberration,
-                            )
+                            if (config.isLiquid) {
+                                lens(
+                                    refractionHeight = (24f.dp.toPx() * lerp(0.6f, 1f, progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                    refractionAmount = (24f.dp.toPx() * lerp(0.6f, 1f, progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                    depthEffect = config.depthEffect,
+                                    chromaticAberration = config.chromaticAberration,
+                                )
+                            }
                         },
-                        highlight = {
-                            val progress = dampedDragAnimation.pressProgress
-                            Highlight.Default.copy(alpha = progress)
+                        highlight = if (config.isLiquid) {
+                            {
+                                val progress = dampedDragAnimation.pressProgress
+                                Highlight.Default.copy(alpha = progress)
+                            }
+                        } else {
+                            null
                         },
                         onDrawSurface = { drawRect(containerColor) },
                     )
@@ -278,16 +286,22 @@ fun LiquidBottomTabs(
                         if (blurPx > 0.5f) {
                             blur(blurPx)
                         }
-                        lens(
-                            refractionHeight = (lerp(8f.dp.toPx(), 14f.dp.toPx(), progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                            refractionAmount = (lerp(12f.dp.toPx(), 20f.dp.toPx(), progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
-                            depthEffect = config.depthEffect,
-                            chromaticAberration = config.chromaticAberration,
-                        )
+                        if (config.isLiquid) {
+                            lens(
+                                refractionHeight = (lerp(8f.dp.toPx(), 14f.dp.toPx(), progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                                refractionAmount = (lerp(12f.dp.toPx(), 20f.dp.toPx(), progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
+                                depthEffect = config.depthEffect,
+                                chromaticAberration = config.chromaticAberration,
+                            )
+                        }
                     },
-                    highlight = {
-                        val progress = dampedDragAnimation.pressProgress
-                        Highlight.Default.copy(alpha = progress)
+                    highlight = if (config.isLiquid) {
+                        {
+                            val progress = dampedDragAnimation.pressProgress
+                            Highlight.Default.copy(alpha = progress)
+                        }
+                    } else {
+                        null
                     },
                     shadow = {
                         val progress = dampedDragAnimation.pressProgress
@@ -303,9 +317,6 @@ fun LiquidBottomTabs(
                     layerBlock = {
                         scaleX = dampedDragAnimation.scaleX
                         scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 10f
-                        scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
-                        scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress

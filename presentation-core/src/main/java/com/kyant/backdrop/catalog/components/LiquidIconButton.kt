@@ -82,12 +82,14 @@ fun LiquidIconButton(
                     if (blurPx > 0.5f) {
                         blur(blurPx)
                     }
-                    lens(
-                        refractionHeight = (14.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                        refractionAmount = (24.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
-                        depthEffect = config.depthEffect,
-                        chromaticAberration = config.chromaticAberration,
-                    )
+                    if (config.isLiquid) {
+                        lens(
+                            refractionHeight = (14.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                            refractionAmount = (24.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                            depthEffect = config.depthEffect,
+                            chromaticAberration = config.chromaticAberration,
+                        )
+                    }
                 },
                 layerBlock = if (isInteractive && enabled) {
                     {

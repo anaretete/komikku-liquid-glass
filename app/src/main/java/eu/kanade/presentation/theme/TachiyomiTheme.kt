@@ -115,7 +115,7 @@ fun TachiyomiPreviewTheme(
 @Composable
 private fun LiquidGlassThemeWrapper(content: @Composable () -> Unit) {
     val uiPreferences = Injekt.get<UiPreferences>()
-    val liquidGlassEnabled by uiPreferences.liquidGlassEnabled().collectAsState()
+    val glassStyle by uiPreferences.glassStyle().collectAsState()
     val chromaticAberration by uiPreferences.liquidGlassChromaticAberration().collectAsState()
     val refractionStrength by uiPreferences.liquidGlassRefractionStrength().collectAsState()
     val blurRadius by uiPreferences.liquidGlassBlurRadius().collectAsState()
@@ -125,7 +125,7 @@ private fun LiquidGlassThemeWrapper(content: @Composable () -> Unit) {
     val depthEffect by uiPreferences.liquidGlassDepthEffect().collectAsState()
 
     val glassConfig = remember(
-        liquidGlassEnabled,
+        glassStyle,
         chromaticAberration,
         refractionStrength,
         blurRadius,
@@ -135,7 +135,7 @@ private fun LiquidGlassThemeWrapper(content: @Composable () -> Unit) {
         depthEffect,
     ) {
         LiquidGlassConfig(
-            enabled = liquidGlassEnabled,
+            glassStyle = glassStyle,
             chromaticAberration = chromaticAberration,
             refractionMultiplier = refractionStrength,
             blurMultiplier = blurRadius,
