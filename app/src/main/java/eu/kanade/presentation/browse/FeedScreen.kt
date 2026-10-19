@@ -19,6 +19,8 @@ import tachiyomi.presentation.core.components.material.CupertinoCheckmark
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.MaterialTheme
+import tachiyomi.presentation.core.components.material.padding
 import androidx.compose.material3.Text
 import tachiyomi.presentation.core.components.material.TextButton
 import androidx.compose.runtime.Composable
