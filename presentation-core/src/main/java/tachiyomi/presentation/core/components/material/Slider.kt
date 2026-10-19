@@ -85,7 +85,6 @@ fun CupertinoSlider(
                         newValue
                     }
                     currentOnValueChange(clamped)
-                    currentOnValueChangeFinished?.invoke()
                 }
             },
             valueRange = valueRange,
@@ -108,7 +107,6 @@ fun CupertinoSlider(
                         newValue
                     }
                     currentOnValueChange(clamped)
-                    currentOnValueChangeFinished?.invoke()
                 }
             },
             valueRange = valueRange,

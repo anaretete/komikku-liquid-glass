@@ -91,11 +91,43 @@ object SettingsAppearanceScreen : SearchableSettings {
             },
             containerColor = containerColor,
             content = { contentPadding ->
-                val items = getAppearancePreferences(uiPreferences = uiPreferences)
-                PreferenceScreen(
-                    items = items,
-                    contentPadding = contentPadding,
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = contentPadding.calculateTopPadding()),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        CupertinoSegmentedControl(
+                            selectedTabIndex = selectedTab,
+                            onTabSelected = { selectedTab = it },
+                            tabs = listOf(
+                                "Theme & Display" to null,
+                                "Liquid Glass" to null,
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    val items = if (selectedTab == 0) {
+                        getAppearancePreferences(uiPreferences = uiPreferences)
+                    } else {
+                        SettingsLiquidGlassScreen.getLiquidGlassPreferences(
+                            uiPreferences = uiPreferences,
+                            scope = scope,
+                        )
+                    }
+
+                    PreferenceScreen(
+                        items = items,
+                        contentPadding = PaddingValues(
+                            bottom = contentPadding.calculateBottomPadding(),
+                        ),
+                    )
+                }
             },
         )
     }

@@ -37,6 +37,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.Shape
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
 fun LiquidButton(
@@ -52,6 +53,7 @@ fun LiquidButton(
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
     content: @Composable RowScope.() -> Unit
 ) {
+    val config = LocalLiquidGlassConfig.current
     val animationScope = rememberCoroutineScope()
 
     val interactiveHighlight = remember(animationScope) {
@@ -67,8 +69,16 @@ fun LiquidButton(
                 shape = { shape },
                 effects = {
                     vibrancy()
-                    blur(2f.dp.toPx())
-                    lens(12f.dp.toPx(), 24f.dp.toPx())
+                    val effectiveBlur = (2f.dp.toPx() * config.blurMultiplier).coerceAtLeast(0f)
+                    if (effectiveBlur > 0.5f) {
+                        blur(effectiveBlur)
+                    }
+                    lens(
+                        refractionHeight = (12f.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                        refractionAmount = (24f.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                        depthEffect = config.depthEffect,
+                        chromaticAberration = config.chromaticAberration,
+                    )
                 },
                 layerBlock = if (isInteractive && enabled) {
                     {
