@@ -21,11 +21,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.kyant.shapes.Capsule
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -175,49 +187,49 @@ fun AppStateBanners(
 @Composable
 private fun DownloadedOnlyModeBanner(modifier: Modifier = Modifier) {
     val isDark = isSystemInDarkTheme()
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        contentAlignment = androidx.compose.ui.Alignment.Center,
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = Modifier
-                .androidx.compose.ui.draw.shadow(
+                .shadow(
                     elevation = 4.dp,
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                     ambientColor = Color.Black.copy(0.2f),
                     spotColor = Color.Black.copy(0.25f),
                 )
-                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .clip(Capsule())
                 .background(
                     if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
                     else Color(0xFFFFFFFF).copy(alpha = 0.92f),
                 )
-                .androidx.compose.foundation.border(
-                    androidx.compose.foundation.BorderStroke(
+                .border(
+                    BorderStroke(
                         0.5.dp,
                         if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
                     ),
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                 )
                 .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            androidx.compose.material3.Icon(
-                imageVector = androidx.compose.material.icons.Icons.Outlined.CloudDownload,
+            Icon(
+                imageVector = Icons.Outlined.CloudDownload,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.androidx.compose.foundation.layout.size(15.dp),
+                modifier = Modifier.size(15.dp),
             )
             Text(
                 text = stringResource(MR.strings.label_downloaded_only),
                 color = if (isDark) Color.White else Color(0xFF1C1C1E),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontSize = 12.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    fontWeight = FontWeight.SemiBold,
                     letterSpacing = (-0.1).sp,
                 ),
             )
@@ -228,49 +240,49 @@ private fun DownloadedOnlyModeBanner(modifier: Modifier = Modifier) {
 @Composable
 private fun IncognitoModeBanner(modifier: Modifier = Modifier) {
     val isDark = isSystemInDarkTheme()
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        contentAlignment = androidx.compose.ui.Alignment.Center,
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = Modifier
-                .androidx.compose.ui.draw.shadow(
+                .shadow(
                     elevation = 4.dp,
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                     ambientColor = Color.Black.copy(0.2f),
                     spotColor = Color.Black.copy(0.25f),
                 )
-                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .clip(Capsule())
                 .background(
                     if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
                     else Color(0xFFFFFFFF).copy(alpha = 0.92f),
                 )
-                .androidx.compose.foundation.border(
-                    androidx.compose.foundation.BorderStroke(
+                .border(
+                    BorderStroke(
                         0.5.dp,
                         if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
                     ),
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                 )
                 .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            androidx.compose.material3.Icon(
-                imageVector = androidx.compose.material.icons.Icons.Outlined.VisibilityOff,
+            Icon(
+                imageVector = Icons.Outlined.VisibilityOff,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.androidx.compose.foundation.layout.size(15.dp),
+                modifier = Modifier.size(15.dp),
             )
             Text(
                 text = stringResource(MR.strings.pref_incognito_mode),
                 color = if (isDark) Color.White else Color(0xFF1C1C1E),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontSize = 12.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    fontWeight = FontWeight.SemiBold,
                     letterSpacing = (-0.1).sp,
                 ),
             )
@@ -287,35 +299,35 @@ private fun IndexingDownloadBanner(
 ) {
     val isDark = isSystemInDarkTheme()
     val density = LocalDensity.current
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp, bottom = 4.dp)
             .then(modifier),
-        contentAlignment = androidx.compose.ui.Alignment.Center,
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = Modifier
-                .androidx.compose.ui.draw.shadow(
+                .shadow(
                     elevation = 4.dp,
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                     ambientColor = Color.Black.copy(0.2f),
                     spotColor = Color.Black.copy(0.25f),
                 )
-                .androidx.compose.ui.draw.clip(com.kyant.shapes.Capsule())
+                .clip(Capsule())
                 .background(
                     if (isDark) Color(0xFF1C1C1E).copy(alpha = 0.88f)
                     else Color(0xFFFFFFFF).copy(alpha = 0.92f),
                 )
-                .androidx.compose.foundation.border(
-                    androidx.compose.foundation.BorderStroke(
+                .border(
+                    BorderStroke(
                         0.5.dp,
                         if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f),
                     ),
-                    shape = com.kyant.shapes.Capsule(),
+                    shape = Capsule(),
                 )
                 .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             var textHeight by remember { mutableStateOf(0.dp) }
@@ -330,7 +342,7 @@ private fun IndexingDownloadBanner(
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontSize = 12.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                    fontWeight = FontWeight.Medium,
                     letterSpacing = (-0.1).sp,
                 ),
                 onTextLayout = {
