@@ -224,8 +224,8 @@ fun ChapterNavigator(
                             .padding(horizontal = 8.dp),
                         value = safeCurrentPage,
                         valueRange = 1..safeTotalPages,
-                        onValueChange = f@{
-                            val newPageIndex = (it - 1).coerceIn(0, safeTotalPages - 1)
+                        onValueChange = f@{ newPage: Int ->
+                            val newPageIndex = (newPage - 1).coerceIn(0, safeTotalPages - 1)
                             if (newPageIndex == currentPage) return@f
                             onPageIndexChange(newPageIndex)
                         },

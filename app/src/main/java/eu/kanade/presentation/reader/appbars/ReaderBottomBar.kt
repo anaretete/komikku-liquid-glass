@@ -24,29 +24,6 @@ import kotlinx.collections.immutable.ImmutableSet
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
-
-@Composable
-fun ReaderBottomBar(
-    // SY -->
-    enabledButtons: ImmutableSet<String>,
-    // SY <--
-    readingMode: ReadingMode,
-    onClickReadingMode: () -> Unit,
-    orientation: ReaderOrientation,
-    onClickOrientation: () -> Unit,
-    cropEnabled: Boolean,
-    onClickCropBorder: () -> Unit,
-    onClickSettings: () -> Unit,
-    // SY -->
-    currentReadingMode: ReadingMode,
-    dualPageSplitEnabled: Boolean,
-    doublePages: Boolean,
-    onClickChapterList: () -> Unit,
-    onClickWebView: (() -> Unit)?,
-    onClickBrowser: (() -> Unit)?,
-    onClickShare: (() -> Unit)?,
-    onClickPageLayout: () -> Unit,
-    onClickShiftPage: () -> Unit,
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -60,6 +37,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
+
 
 @Composable
 fun ReaderBottomBar(

@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.font.FontWeight
+import tachiyomi.presentation.core.components.material.CupertinoCheckmark
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
@@ -173,12 +178,6 @@ fun <T> ListPreferenceWidget(
         }
     }
 }
-
-import tachiyomi.presentation.core.components.material.CupertinoCheckmark
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 private fun DialogRow(

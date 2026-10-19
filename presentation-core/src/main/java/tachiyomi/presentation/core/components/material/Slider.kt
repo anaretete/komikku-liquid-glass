@@ -288,6 +288,7 @@ fun Slider(
     colors: SliderColors = SliderDefaults.colors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     backdrop: Backdrop? = null,
+    accentColor: Color? = null,
     thumb: @Composable (SliderState) -> Unit = {
         SliderDefaults.Thumb(
             interactionSource = interactionSource,
@@ -310,6 +311,7 @@ fun Slider(
         colors = colors,
         interactionSource = interactionSource,
         backdrop = backdrop,
+        accentColor = accentColor,
         thumb = thumb,
         track = track,
     )

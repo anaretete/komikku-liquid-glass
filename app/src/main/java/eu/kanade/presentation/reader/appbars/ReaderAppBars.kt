@@ -262,8 +262,9 @@ fun ReaderAppBars(
                     )
                 }
                 val bottomDockBackdrop = rememberLayerBackdrop()
+                val fallbackColor = if (isSystemInDarkTheme()) Color(0xFF141416) else Color(0xFFF2F2F6)
                 val effectiveReaderBackdrop = LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
-                    drawRect(if (isSystemInDarkTheme()) Color(0xFF141416) else Color(0xFFF2F2F6))
+                    drawRect(fallbackColor)
                 }
                 val bottomBarModifier = if (isGlass) {
                     Modifier
