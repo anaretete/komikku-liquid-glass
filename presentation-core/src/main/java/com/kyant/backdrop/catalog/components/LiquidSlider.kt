@@ -1,16 +1,19 @@
 package com.kyant.backdrop.catalog.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -71,14 +74,18 @@ fun LiquidSlider(
     val trackBackdrop = rememberLayerBackdrop()
 
     BoxWithConstraints(
-        modifier.fillMaxWidth(),
+        modifier
+            .defaultMinSize(minHeight = 44.dp)
+            .fillMaxWidth(),
         contentAlignment = Alignment.CenterStart,
     ) {
         val trackWidth = constraints.maxWidth
 
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
-        var didDrag by remember { mutableStateOf(false) }
+        var isDragging by remember { mutableStateOf(false) }
+        var currentDragValue by remember { mutableFloatStateOf(value()) }
+
         val dampedDragAnimation = remember(animationScope) {
             DampedDragAnimation(
                 animationScope = animationScope,
@@ -86,45 +93,33 @@ fun LiquidSlider(
                 valueRange = valueRange,
                 visibilityThreshold = visibilityThreshold,
                 initialScale = 1f,
-                pressedScale = 1.5f,
+                pressedScale = 1.05f,
                 onDragStarted = {},
-                onDragStopped = {
-                    if (didDrag) {
-                        onValueChange(targetValue)
-                    }
-                },
-                onDrag = { _, dragAmount ->
-                    if (!didDrag) {
-                        didDrag = dragAmount.x != 0f
-                    }
-                    val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
-                    onValueChange(
-                        if (isLtr) {
-                            (targetValue + delta).coerceIn(valueRange)
-                        } else {
-                            (targetValue - delta).coerceIn(valueRange)
-                        },
-                    )
-                },
+                onDragStopped = {},
+                onDrag = { _, _ -> },
             )
         }
+
         LaunchedEffect(dampedDragAnimation) {
             snapshotFlow { value() }
-                .collectLatest { value ->
-                    if (dampedDragAnimation.targetValue != value) {
-                        dampedDragAnimation.updateValue(value)
+                .collectLatest { valValue ->
+                    if (!isDragging && dampedDragAnimation.targetValue != valValue) {
+                        currentDragValue = valValue
+                        dampedDragAnimation.updateValue(valValue)
                     }
                 }
         }
 
-        Box(Modifier.layerBackdrop(trackBackdrop)) {
-            Box(
-                Modifier
-                    .clip(Capsule())
-                    .background(trackColor)
-                    .pointerInput(animationScope) {
-                        detectTapGestures { position ->
-                            val delta = (valueRange.endInclusive - valueRange.start) * (position.x / trackWidth)
+        Box(
+            Modifier
+                .layerBackdrop(trackBackdrop)
+                .fillMaxWidth()
+                .pointerInput(trackWidth, isLtr, valueRange) {
+                    detectHorizontalDragGestures(
+                        onDragStart = { offset ->
+                            isDragging = true
+                            dampedDragAnimation.press()
+                            val delta = (valueRange.endInclusive - valueRange.start) * (offset.x / trackWidth)
                             val targetValue =
                                 (
                                     if (isLtr) {
@@ -133,10 +128,56 @@ fun LiquidSlider(
                                         valueRange.endInclusive - delta
                                     }
                                 ).coerceIn(valueRange)
-                            dampedDragAnimation.animateToValue(targetValue)
+                            currentDragValue = targetValue
+                            dampedDragAnimation.updateValue(targetValue)
                             onValueChange(targetValue)
-                        }
+                        },
+                        onDragEnd = {
+                            dampedDragAnimation.release()
+                            onValueChange(currentDragValue)
+                            isDragging = false
+                        },
+                        onDragCancel = {
+                            dampedDragAnimation.release()
+                            isDragging = false
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount / trackWidth)
+                            currentDragValue =
+                                (
+                                    if (isLtr) {
+                                        currentDragValue + delta
+                                    } else {
+                                        currentDragValue - delta
+                                    }
+                                ).coerceIn(valueRange)
+                            dampedDragAnimation.updateValue(currentDragValue)
+                            onValueChange(currentDragValue)
+                        },
+                    )
+                }
+                .pointerInput(trackWidth, isLtr, valueRange) {
+                    detectTapGestures { position ->
+                        val delta = (valueRange.endInclusive - valueRange.start) * (position.x / trackWidth)
+                        val targetValue =
+                            (
+                                if (isLtr) {
+                                    valueRange.start + delta
+                                } else {
+                                    valueRange.endInclusive - delta
+                                }
+                            ).coerceIn(valueRange)
+                        currentDragValue = targetValue
+                        dampedDragAnimation.animateToValue(targetValue)
+                        onValueChange(targetValue)
                     }
+                },
+        ) {
+            Box(
+                Modifier
+                    .clip(Capsule())
+                    .background(trackColor)
                     .height(6f.dp)
                     .fillMaxWidth(),
             )
@@ -163,7 +204,6 @@ fun LiquidSlider(
                         (-size.width / 2f + trackWidth * dampedDragAnimation.progress)
                             .fastCoerceIn(-size.width / 4f, trackWidth - size.width * 3f / 4f) * if (isLtr) 1f else -1f
                 }
-                .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(
                         backdrop,
@@ -210,9 +250,6 @@ fun LiquidSlider(
                     layerBlock = {
                         scaleX = dampedDragAnimation.scaleX
                         scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 10f
-                        scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
-                        scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
