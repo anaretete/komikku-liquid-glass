@@ -3,7 +3,6 @@ package com.kyant.backdrop.catalog.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,9 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -42,13 +38,11 @@ import com.kyant.backdrop.catalog.utils.DampedDragAnimation
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
-import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
 fun LiquidToggle(
@@ -56,10 +50,14 @@ fun LiquidToggle(
     onSelect: (Boolean) -> Unit,
     backdrop: Backdrop,
     modifier: Modifier = Modifier,
-    accentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
-    val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()
+    val accentColor =
+        if (isLightTheme) {
+            Color(0xFF34C759)
+        } else {
+            Color(0xFF30D158)
+        }
     val trackColor =
         if (isLightTheme) {
             Color(0xFF787878).copy(0.2f)
@@ -134,22 +132,8 @@ fun LiquidToggle(
                 .layerBackdrop(trackBackdrop)
                 .clip(Capsule())
                 .drawBehind {
-                    drawRect(trackColor)
-                    val press = dampedDragAnimation.pressProgress
-                    if (press > 0.001f) {
-                        val fraction = dampedDragAnimation.value
-                        val greenAlpha = (press * lerp(0.5f, 1f, fraction)).coerceIn(0f, 1f)
-                        val middleWidth = size.width * 0.52f
-                        val middleLeft = (size.width - middleWidth) / 2f
-                        val middleHeight = size.height * 0.72f
-                        val middleTop = (size.height - middleHeight) / 2f
-                        drawRoundRect(
-                            color = accentColor.copy(alpha = greenAlpha),
-                            topLeft = Offset(middleLeft, middleTop),
-                            size = Size(middleWidth, middleHeight),
-                            cornerRadius = CornerRadius(middleHeight / 2f, middleHeight / 2f),
-                        )
-                    }
+                    val fraction = dampedDragAnimation.value
+                    drawRect(lerp(trackColor, accentColor, fraction))
                 }
                 .size(64f.dp, 28f.dp),
         )
@@ -185,16 +169,11 @@ fun LiquidToggle(
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        vibrancy()
-                        val blurPx = (lerp(4f.dp.toPx(), 8f.dp.toPx(), 1f - progress) * config.blurMultiplier).coerceAtLeast(0f)
-                        if (blurPx > 0.5f) {
-                            blur(blurPx)
-                        }
+                        blur(8f.dp.toPx() * (1f - progress))
                         lens(
-                            refractionHeight = (lerp(6f.dp.toPx(), 12f.dp.toPx(), progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                            refractionAmount = (lerp(8f.dp.toPx(), 18f.dp.toPx(), progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
-                            depthEffect = config.depthEffect,
-                            chromaticAberration = config.chromaticAberration,
+                            5f.dp.toPx() * progress,
+                            10f.dp.toPx() * progress,
+                            chromaticAberration = true,
                         )
                     },
                     highlight = {
@@ -227,7 +206,7 @@ fun LiquidToggle(
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
-                        drawRect(Color.White.copy(alpha = (0.22f * (1f - progress) * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
+                        drawRect(Color.White.copy(alpha = 1f - progress))
                     },
                 )
                 .size(40f.dp, 24f.dp),

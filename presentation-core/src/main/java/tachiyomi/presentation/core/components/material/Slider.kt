@@ -90,7 +90,6 @@ fun CupertinoSlider(
         visibilityThreshold = threshold,
         backdrop = activeBackdrop,
         modifier = modifier.alpha(if (enabled) 1f else 0.5f),
-        accentColor = accentColor,
     )
 }
 

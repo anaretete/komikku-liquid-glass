@@ -61,7 +61,6 @@ fun CupertinoSwitch(
         onSelect = { newValue -> if (enabled) currentOnCheckedChange?.invoke(newValue) },
         backdrop = effectiveBackdrop,
         modifier = modifier.alpha(if (enabled) 1f else 0.5f),
-        accentColor = accentColor,
     )
 }
 

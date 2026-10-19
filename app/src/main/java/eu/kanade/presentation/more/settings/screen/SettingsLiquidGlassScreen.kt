@@ -759,7 +759,7 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                                 fontWeight = FontWeight.Medium,
                             )
                             Text(
-                                text = "Reservoir illuminates active theme color when held",
+                                text = "Authentic Apple iOS Liquid Glass Toggle",
                                 color = if (isDark) Color(0xFF8E8E93) else Color(0xFF6C6C70),
                                 fontSize = 11.sp,
                             )
@@ -768,7 +768,6 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                             selected = { previewToggle },
                             onSelect = { previewToggle = it },
                             backdrop = backdrop,
-                            accentColor = MaterialTheme.colorScheme.primary,
                         )
                     }
 
@@ -779,8 +778,9 @@ object SettingsLiquidGlassScreen : SearchableSettings {
                         LiquidSlider(
                             value = { previewSliderValue },
                             onValueChange = { previewSliderValue = it },
+                            valueRange = 0f..1f,
+                            visibilityThreshold = 0.01f,
                             backdrop = backdrop,
-                            accentColor = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f),
                         )
                         Spacer(modifier = Modifier.width(12.dp))
