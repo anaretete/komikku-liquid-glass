@@ -102,7 +102,7 @@ fun LiquidSlider(
                     didDrag = true
                     val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
                     currentDragValue = (if (isLtr) currentDragValue + delta else currentDragValue - delta).coerceIn(valueRange)
-                    dampedDragAnimation.updateValue(currentDragValue)
+                    updateValue(currentDragValue)
                     onValueChange(currentDragValue)
                 }
             )
