@@ -122,14 +122,7 @@ fun LiquidSlider(
                             isDragging = true
                             dampedDragAnimation.press()
                             val delta = (valueRange.endInclusive - valueRange.start) * (offset.x / trackWidth)
-                            val targetValue =
-                                (
-                                    if (isLtr) {
-                                        valueRange.start + delta
-                                    } else {
-                                        valueRange.endInclusive - delta
-                                    }
-                                ).coerceIn(valueRange)
+                            val targetValue = (if (isLtr) valueRange.start + delta else valueRange.endInclusive - delta).coerceIn(valueRange)
                             currentDragValue = targetValue
                             dampedDragAnimation.updateValue(targetValue)
                             onValueChange(targetValue)
@@ -146,14 +139,7 @@ fun LiquidSlider(
                         onHorizontalDrag = { change, dragAmount ->
                             change.consume()
                             val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount / trackWidth)
-                            currentDragValue =
-                                (
-                                    if (isLtr) {
-                                        currentDragValue + delta
-                                    } else {
-                                        currentDragValue - delta
-                                    }
-                                ).coerceIn(valueRange)
+                            currentDragValue = (if (isLtr) currentDragValue + delta else currentDragValue - delta).coerceIn(valueRange)
                             dampedDragAnimation.updateValue(currentDragValue)
                             onValueChange(currentDragValue)
                         },
@@ -162,14 +148,7 @@ fun LiquidSlider(
                 .pointerInput(trackWidth, isLtr, valueRange) {
                     detectTapGestures { position ->
                         val delta = (valueRange.endInclusive - valueRange.start) * (position.x / trackWidth)
-                        val targetValue =
-                            (
-                                if (isLtr) {
-                                    valueRange.start + delta
-                                } else {
-                                    valueRange.endInclusive - delta
-                                }
-                            ).coerceIn(valueRange)
+                        val targetValue = (if (isLtr) valueRange.start + delta else valueRange.endInclusive - delta).coerceIn(valueRange)
                         currentDragValue = targetValue
                         dampedDragAnimation.animateToValue(targetValue)
                         onValueChange(targetValue)
