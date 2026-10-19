@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun BackHandler(
     enabled: Boolean = true,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     androidx.activity.compose.BackHandler(enabled, onBack)
 }

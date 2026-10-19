@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,12 +43,12 @@ import com.kyant.backdrop.catalog.utils.DampedDragAnimation
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.material3.MaterialTheme
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
@@ -63,8 +64,11 @@ fun LiquidSlider(
     val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()
     val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(0.2f)
-        else Color(0xFF787880).copy(0.36f)
+        if (isLightTheme) {
+            Color(0xFF787878).copy(0.2f)
+        } else {
+            Color(0xFF787880).copy(0.36f)
+        }
 
     val trackBackdrop = rememberLayerBackdrop()
 
@@ -72,7 +76,7 @@ fun LiquidSlider(
         modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 44.dp),
-        contentAlignment = Alignment.CenterStart
+        contentAlignment = Alignment.CenterStart,
     ) {
         val trackWidth = constraints.maxWidth.coerceAtLeast(1)
 
@@ -105,7 +109,7 @@ fun LiquidSlider(
                     currentDragValue = (if (isLtr) currentDragValue + delta else currentDragValue - delta).coerceIn(valueRange)
                     updateValue(currentDragValue)
                     onValueChange(currentDragValue)
-                }
+                },
             )
         }
         LaunchedEffect(value()) {
@@ -149,14 +153,14 @@ fun LiquidSlider(
                     currentDragValue = (if (isLtr) currentDragValue + delta else currentDragValue - delta).coerceIn(valueRange)
                     dampedDragAnimation.updateValue(currentDragValue)
                     onValueChange(currentDragValue)
-                }
+                },
             )
         }
 
         Box(
             Modifier
                 .layerBackdrop(trackBackdrop)
-                .then(sliderDragModifier)
+                .then(sliderDragModifier),
         ) {
             Box(
                 Modifier
@@ -166,8 +170,13 @@ fun LiquidSlider(
                         detectTapGestures { position ->
                             val delta = (valueRange.endInclusive - valueRange.start) * (position.x / trackWidth)
                             val targetValue =
-                                (if (isLtr) valueRange.start + delta
-                                else valueRange.endInclusive - delta)
+                                (
+                                    if (isLtr) {
+                                        valueRange.start + delta
+                                    } else {
+                                        valueRange.endInclusive - delta
+                                    }
+                                    )
                                     .coerceIn(valueRange)
                             currentDragValue = targetValue
                             dampedDragAnimation.animateToValue(targetValue)
@@ -175,7 +184,7 @@ fun LiquidSlider(
                         }
                     }
                     .height(6f.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
             )
 
             Box(
@@ -189,7 +198,7 @@ fun LiquidSlider(
                         layout(width, placeable.height) {
                             placeable.place(0, 0)
                         }
-                    }
+                    },
             )
         }
 
@@ -211,15 +220,19 @@ fun LiquidSlider(
                             scale(scaleX, scaleY) {
                                 drawBackdrop()
                             }
-                        }
+                        },
                     ),
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        blur(8f.dp.toPx() * (1f - progress) * config.blurMultiplier)
+                        vibrancy()
+                        val blurPx = (lerp(4f.dp.toPx(), 8f.dp.toPx(), 1f - progress) * config.blurMultiplier).coerceAtLeast(0f)
+                        if (blurPx > 0.5f) {
+                            blur(blurPx)
+                        }
                         lens(
-                            refractionHeight = (10f.dp.toPx() * progress * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                            refractionAmount = (14f.dp.toPx() * progress * config.refractionMultiplier).coerceAtLeast(0.1f),
+                            refractionHeight = (lerp(6f.dp.toPx(), 14f.dp.toPx(), progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                            refractionAmount = (lerp(10f.dp.toPx(), 20f.dp.toPx(), progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
                             depthEffect = config.depthEffect,
                             chromaticAberration = config.chromaticAberration,
                         )
@@ -229,20 +242,20 @@ fun LiquidSlider(
                         Highlight.Ambient.copy(
                             width = Highlight.Ambient.width / 1.5f,
                             blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                            alpha = progress
+                            alpha = progress,
                         )
                     },
                     shadow = {
                         Shadow(
                             radius = 4f.dp,
-                            color = Color.Black.copy(alpha = 0.05f)
+                            color = Color.Black.copy(alpha = 0.05f),
                         )
                     },
                     innerShadow = {
                         val progress = dampedDragAnimation.pressProgress
                         InnerShadow(
                             radius = 4f.dp * progress,
-                            alpha = progress
+                            alpha = progress,
                         )
                     },
                     layerBlock = {
@@ -254,10 +267,10 @@ fun LiquidSlider(
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
-                        drawRect(Color.White.copy(alpha = 1f - progress))
-                    }
+                        drawRect(Color.White.copy(alpha = (0.22f * (1f - progress) * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
+                    },
                 )
-                .size(40f.dp, 24f.dp)
+                .size(40f.dp, 24f.dp),
         )
     }
 }

@@ -75,7 +75,7 @@ class DampedDragAnimation(
             onDragCancel = {
                 onDragStopped()
                 release()
-            }
+            },
         ) { change, dragAmount ->
             onDrag(size, dragAmount)
         }
@@ -129,7 +129,7 @@ class DampedDragAnimation(
     private fun updateVelocity() {
         velocityTracker.addPosition(
             Clock.System.now().toEpochMilliseconds(),
-            Offset(value, 0f)
+            Offset(value, 0f),
         )
         val targetVelocity = velocityTracker.calculateVelocity().x / (valueRange.endInclusive - valueRange.start)
         animationScope.launch { velocityAnimation.animateTo(targetVelocity, velocityAnimationSpec) }

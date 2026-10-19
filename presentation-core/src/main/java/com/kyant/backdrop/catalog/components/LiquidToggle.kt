@@ -3,6 +3,7 @@ package com.kyant.backdrop.catalog.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,12 +42,12 @@ import com.kyant.backdrop.catalog.utils.DampedDragAnimation
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.material3.MaterialTheme
 import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 
 @Composable
@@ -60,8 +61,11 @@ fun LiquidToggle(
     val config = LocalLiquidGlassConfig.current
     val isLightTheme = !isSystemInDarkTheme()
     val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(0.2f)
-        else Color(0xFF787880).copy(0.36f)
+        if (isLightTheme) {
+            Color(0xFF787878).copy(0.2f)
+        } else {
+            Color(0xFF787880).copy(0.36f)
+        }
 
     val density = LocalDensity.current
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
@@ -94,9 +98,12 @@ fun LiquidToggle(
                 }
                 val delta = dragAmount.x / dragWidth
                 fraction =
-                    if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
-                    else (fraction - delta).fastCoerceIn(0f, 1f)
-            }
+                    if (isLtr) {
+                        (fraction + delta).fastCoerceIn(0f, 1f)
+                    } else {
+                        (fraction - delta).fastCoerceIn(0f, 1f)
+                    }
+            },
         )
     }
     LaunchedEffect(dampedDragAnimation) {
@@ -120,7 +127,7 @@ fun LiquidToggle(
 
     Box(
         modifier,
-        contentAlignment = Alignment.CenterStart
+        contentAlignment = Alignment.CenterStart,
     ) {
         Box(
             Modifier
@@ -144,7 +151,7 @@ fun LiquidToggle(
                         )
                     }
                 }
-                .size(64f.dp, 28f.dp)
+                .size(64f.dp, 28f.dp),
         )
 
         Box(
@@ -153,8 +160,11 @@ fun LiquidToggle(
                     val fraction = dampedDragAnimation.value
                     val padding = 2f.dp.toPx()
                     translationX =
-                        if (isLtr) lerp(padding, padding + dragWidth, fraction)
-                        else lerp(-padding, -(padding + dragWidth), fraction)
+                        if (isLtr) {
+                            lerp(padding, padding + dragWidth, fraction)
+                        } else {
+                            lerp(-padding, -(padding + dragWidth), fraction)
+                        }
                 }
                 .semantics {
                     role = Role.Switch
@@ -170,15 +180,19 @@ fun LiquidToggle(
                             scale(scaleX, scaleY) {
                                 drawBackdrop()
                             }
-                        }
+                        },
                     ),
                     shape = { Capsule() },
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
-                        blur(8f.dp.toPx() * (1f - progress) * config.blurMultiplier)
+                        vibrancy()
+                        val blurPx = (lerp(4f.dp.toPx(), 8f.dp.toPx(), 1f - progress) * config.blurMultiplier).coerceAtLeast(0f)
+                        if (blurPx > 0.5f) {
+                            blur(blurPx)
+                        }
                         lens(
-                            refractionHeight = (5f.dp.toPx() * progress * config.lensHeightMultiplier).coerceAtLeast(0.1f),
-                            refractionAmount = (10f.dp.toPx() * progress * config.refractionMultiplier).coerceAtLeast(0.1f),
+                            refractionHeight = (lerp(6f.dp.toPx(), 12f.dp.toPx(), progress) * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                            refractionAmount = (lerp(8f.dp.toPx(), 18f.dp.toPx(), progress) * config.refractionMultiplier).coerceAtLeast(0.1f),
                             depthEffect = config.depthEffect,
                             chromaticAberration = config.chromaticAberration,
                         )
@@ -188,20 +202,20 @@ fun LiquidToggle(
                         Highlight.Ambient.copy(
                             width = Highlight.Ambient.width / 1.5f,
                             blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                            alpha = progress
+                            alpha = progress,
                         )
                     },
                     shadow = {
                         Shadow(
                             radius = 4f.dp,
-                            color = Color.Black.copy(alpha = 0.05f)
+                            color = Color.Black.copy(alpha = 0.05f),
                         )
                     },
                     innerShadow = {
                         val progress = dampedDragAnimation.pressProgress
                         InnerShadow(
                             radius = 4f.dp * progress,
-                            alpha = progress
+                            alpha = progress,
                         )
                     },
                     layerBlock = {
@@ -213,10 +227,10 @@ fun LiquidToggle(
                     },
                     onDrawSurface = {
                         val progress = dampedDragAnimation.pressProgress
-                        drawRect(Color.White.copy(alpha = 1f - progress))
-                    }
+                        drawRect(Color.White.copy(alpha = (0.22f * (1f - progress) * config.tintAlphaMultiplier).coerceIn(0f, 1f)))
+                    },
                 )
-                .size(40f.dp, 24f.dp)
+                .size(40f.dp, 24f.dp),
         )
     }
 }

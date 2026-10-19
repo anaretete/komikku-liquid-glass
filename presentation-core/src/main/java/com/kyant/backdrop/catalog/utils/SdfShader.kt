@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package com.kyant.backdrop.catalog.utils
 
 import android.graphics.BitmapShader
@@ -94,7 +96,7 @@ half4 main(float2 coord) {
         sd = 0.0;
     }
     float2 normal = normalize(v.gb * 2.0 - 1.0);
-    
+
     float intensity = circleMap(1.0 - min(1.0, -sd * 1.5));
     float2 refractedCoord = coord - intensity * refractionHeight * normal;
 

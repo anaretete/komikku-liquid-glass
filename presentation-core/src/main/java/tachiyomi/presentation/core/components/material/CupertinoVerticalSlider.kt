@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,8 +70,11 @@ fun CupertinoVerticalSlider(
     }
     val accentColor = MaterialTheme.colorScheme.primary
     val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(alpha = 0.2f)
-        else Color(0xFF787880).copy(alpha = 0.36f)
+        if (isLightTheme) {
+            Color(0xFF787878).copy(alpha = 0.2f)
+        } else {
+            Color(0xFF787880).copy(alpha = 0.36f)
+        }
 
     val trackBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
@@ -126,7 +129,9 @@ fun CupertinoVerticalSlider(
         val updateFromY: (Float) -> Unit = { posY ->
             val fraction = if (maxTravel > 0f) {
                 ((posY - thumbHeightPx / 2f) / maxTravel).coerceIn(0f, 1f)
-            } else 0f
+            } else {
+                0f
+            }
             val targetValue = if (!invertDirection) {
                 valueRange.start + fraction * (valueRange.endInclusive - valueRange.start)
             } else {

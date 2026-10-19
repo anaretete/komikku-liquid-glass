@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package com.kyant.backdrop.catalog.utils
 
 internal const val LoremIpsum =

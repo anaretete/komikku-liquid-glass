@@ -664,6 +664,7 @@ val Icons.Outlined.MoreHoriz: ImageVector
 val CupertinoMoreHoriz: ImageVector
     get() = Icons.Filled.MoreHoriz
 
+@Suppress("ktlint:standard:backing-property-naming")
 private var _moreHoriz: ImageVector? = null
 
 /**
@@ -902,5 +903,3 @@ fun CupertinoSwitchRow(
         )
     }
 }
-
-

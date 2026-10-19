@@ -131,7 +131,9 @@ fun SolidCupertinoSlider(
         val updateFromPosition: (Float) -> Unit = { posX ->
             val fraction = if (maxTravel > 0f) {
                 ((posX - thumbWidthPx / 2f) / maxTravel).coerceIn(0f, 1f)
-            } else 0f
+            } else {
+                0f
+            }
             val effectiveFraction = if (isLtr) fraction else 1f - fraction
             val targetValue = if (steps > 0) {
                 val stepCount = steps + 1

@@ -29,6 +29,7 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
 import tachiyomi.presentation.core.components.material.LocalLayerBackdrop
+import tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -52,6 +53,7 @@ fun LiquidIconButton(
     surfaceColor: Color = Color.Unspecified,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val config = LocalLiquidGlassConfig.current
     val isDark = isSystemInDarkTheme()
     val effectiveBackdrop = backdrop ?: LocalLayerBackdrop.current ?: rememberCanvasBackdrop {
         drawRect(if (isDark) Color(0xFF141416) else Color(0xFFF2F2F6))
@@ -61,8 +63,10 @@ fun LiquidIconButton(
         InteractiveHighlight(animationScope = animationScope)
     }
 
-    val defaultSurfaceColor = if (surfaceColor.isSpecified) surfaceColor else {
-        if (isDark) Color(0xFF141416).copy(alpha = 0.55f) else Color(0xFFFFFFFF).copy(alpha = 0.65f)
+    val defaultSurfaceColor = if (surfaceColor.isSpecified) {
+        surfaceColor
+    } else {
+        if (isDark) Color(0xFF141416).copy(alpha = 0.55f * config.tintAlphaMultiplier) else Color(0xFFFFFFFF).copy(alpha = 0.65f * config.tintAlphaMultiplier)
     }
 
     Box(
@@ -74,8 +78,16 @@ fun LiquidIconButton(
                 shape = { shape },
                 effects = {
                     vibrancy()
-                    blur(16.dp.toPx())
-                    lens(14.dp.toPx(), 24.dp.toPx(), depthEffect = true, chromaticAberration = true)
+                    val blurPx = (16.dp.toPx() * config.blurMultiplier).coerceAtLeast(0f)
+                    if (blurPx > 0.5f) {
+                        blur(blurPx)
+                    }
+                    lens(
+                        refractionHeight = (14.dp.toPx() * config.lensHeightMultiplier).coerceAtLeast(0.1f),
+                        refractionAmount = (24.dp.toPx() * config.refractionMultiplier).coerceAtLeast(0.1f),
+                        depthEffect = config.depthEffect,
+                        chromaticAberration = config.chromaticAberration,
+                    )
                 },
                 layerBlock = if (isInteractive && enabled) {
                     {
@@ -98,7 +110,9 @@ fun LiquidIconButton(
                         scaleY = scale + maxDragScale * abs(sin(offsetAngle) * offset.y / this.size.maxDimension) *
                             (height / width).fastCoerceAtMost(1f)
                     }
-                } else null,
+                } else {
+                    null
+                },
                 onDrawSurface = {
                     if (tint.isSpecified) {
                         drawRect(tint, blendMode = BlendMode.Hue)
@@ -119,7 +133,9 @@ fun LiquidIconButton(
                     Modifier
                         .then(interactiveHighlight.modifier)
                         .then(interactiveHighlight.gestureModifier)
-                } else Modifier
+                } else {
+                    Modifier
+                },
             ),
         contentAlignment = Alignment.Center,
         content = content,
