@@ -20,6 +20,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.kyant.shapes.Capsule
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.ChipBorder
 import eu.kanade.presentation.components.SuggestionChip
@@ -172,20 +182,20 @@ fun TagsChip(
     val isGlass = tachiyomi.presentation.core.components.material.LocalLiquidGlassConfig.current.enabled
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
         if (isGlass) {
-            androidx.compose.foundation.layout.Box(
+            Box(
                 modifier = modifier
-                    .androidx.compose.foundation.layout.height(30.dp)
-                    .clip(com.kyant.shapes.Capsule())
-                    .background(androidx.compose.ui.graphics.Color(0xFF2C2C2E))
+                    .height(30.dp)
+                    .clip(Capsule())
+                    .background(Color(0xFF2C2C2E))
                     .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = text,
-                    color = androidx.compose.ui.graphics.Color(0xFFEBEBF5),
+                    color = Color(0xFFEBEBF5),
                     fontSize = 12.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

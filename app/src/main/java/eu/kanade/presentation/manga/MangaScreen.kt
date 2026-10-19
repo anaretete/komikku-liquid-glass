@@ -686,6 +686,8 @@ private fun MangaScreenSmallImpl(
                                         letterSpacing = (-0.2).sp,
                                         color = Color.White,
                                     )
+                                }
+                            }
                         }
                     }
 
