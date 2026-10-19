@@ -32,17 +32,24 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tanh
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.Shape
 
 @Composable
 fun LiquidButton(
     onClick: () -> Unit,
-    backdrop: Backdrop,
     modifier: Modifier = Modifier,
+    backdrop: Backdrop = rememberLayerBackdrop(),
     shape: Shape = Capsule(),
+    enabled: Boolean = true,
     isInteractive: Boolean = true,
     tint: Color = Color.Unspecified,
     surfaceColor: Color = Color.Unspecified,
+    contentColor: Color = Color.Unspecified,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
     content: @Composable RowScope.() -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
@@ -63,7 +70,7 @@ fun LiquidButton(
                     blur(2f.dp.toPx())
                     lens(12f.dp.toPx(), 24f.dp.toPx())
                 },
-                layerBlock = if (isInteractive) {
+                layerBlock = if (isInteractive && enabled) {
                     {
                         val width = size.width
                         val height = size.height
@@ -94,21 +101,22 @@ fun LiquidButton(
                 onDrawSurface = {
                     if (tint.isSpecified) {
                         drawRect(tint, blendMode = BlendMode.Hue)
-                        drawRect(tint.copy(alpha = 0.75f))
+                        drawRect(tint.copy(alpha = if (enabled) 0.75f else 0.35f))
                     }
                     if (surfaceColor.isSpecified) {
-                        drawRect(surfaceColor)
+                        drawRect(surfaceColor.copy(alpha = if (enabled) 1f else 0.35f))
                     }
                 }
             )
             .clickable(
+                enabled = enabled,
                 interactionSource = null,
-                indication = if (isInteractive) null else LocalIndication.current,
+                indication = if (isInteractive && enabled) null else LocalIndication.current,
                 role = Role.Button,
                 onClick = onClick
             )
             .then(
-                if (isInteractive) {
+                if (isInteractive && enabled) {
                     Modifier
                         .then(interactiveHighlight.modifier)
                         .then(interactiveHighlight.gestureModifier)
@@ -117,9 +125,18 @@ fun LiquidButton(
                 }
             )
             .height(48f.dp)
-            .padding(horizontal = 16f.dp),
+            .padding(contentPadding),
         horizontalArrangement = Arrangement.spacedBy(8f.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
-        content = content
+        content = {
+            if (contentColor.isSpecified) {
+                CompositionLocalProvider(
+                    LocalContentColor provides contentColor,
+                    content = { content() }
+                )
+            } else {
+                content()
+            }
+        }
     )
 }

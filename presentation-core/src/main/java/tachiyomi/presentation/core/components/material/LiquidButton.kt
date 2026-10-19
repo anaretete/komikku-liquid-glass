@@ -31,7 +31,7 @@ fun LiquidButton(
     KyantLiquidButton(
         onClick = onClick,
         modifier = modifier,
-        backdrop = backdrop,
+        backdrop = backdrop ?: rememberLayerBackdrop(),
         enabled = enabled,
         isInteractive = isInteractive,
         tint = tint,
